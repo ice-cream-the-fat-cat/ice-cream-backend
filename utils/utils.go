@@ -10,6 +10,7 @@ func LoadEnv()  {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		// TODO: Figure out how to load .env in Heroku
+		log.Println("Error loading .env file")
 	}
 }
