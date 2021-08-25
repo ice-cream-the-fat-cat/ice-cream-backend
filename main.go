@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/ice-cream-backend/routes"
+	"github.com/ice-cream-backend/routes/v1"
+	gardens_router "github.com/ice-cream-backend/routes/v1/gardens"
 	"github.com/ice-cream-backend/utils"
 )
 
@@ -15,7 +16,7 @@ func createServer() {
 
 	router.HandleFunc("/", routes.HomePage)
 
-	router.HandleFunc("/gardens/{version}/{id}", routes.Gardens)
+	router.HandleFunc("/gardens/{version}/{id}", gardens_router.Gardens)
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(":"+port, router))
