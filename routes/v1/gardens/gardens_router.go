@@ -18,3 +18,9 @@ func GardensUserIdGet(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "GardensUserIdGet  version:%v  userid:%v\n", vars["version"], vars["userid"])
 	fmt.Println("Endpoint hit: gardens router")
 }
+
+func GardensPost(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	fmt.Fprintf(w, "GardensPost  version:%v\n", vars["version"])
+	fmt.Println("Endpoint hit: gardens GardensPost")
+}
