@@ -21,6 +21,11 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "Error creating rules!")
 	} else {
-		fmt.Fprintln(w, "Successfully created rules:", res.InsertedID)
+		newRule := rules_controllers.GetRules(res.InsertedID)
+
+		// fmt.Fprintln(w, "Successfully created rules:", res.InsertedID)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(newRule)
 	}
 }
