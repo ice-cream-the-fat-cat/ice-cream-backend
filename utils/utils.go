@@ -2,6 +2,7 @@ package utils
 
 import (
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 )
@@ -9,8 +10,7 @@ import (
 func LoadEnv()  {
 	err := godotenv.Load(".env")
 
-	if err != nil {
-		// TODO: Figure out how to load .env in Heroku
-		log.Println("Error loading .env file")
+	if err != nil && os.Getenv("GO_ENV") != "production" {
+		log.Fatal("Error loading .env file")
 	}
 }
