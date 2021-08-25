@@ -18,7 +18,7 @@ func createServer() {
 
 	router.HandleFunc("/icecream-test", routes.TestMongoDB).Methods("GET")
 
-	router.HandleFunc("/gardens/{version}/{id}", gardens_router.Gardens)
+	router.HandleFunc("/{version}/gardens/{id}", gardens_router.GardensIdGet).Methods("GET")
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(":"+port, router))
