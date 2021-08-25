@@ -14,7 +14,9 @@ import (
 func createServer() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", routes.HomePage)
+	router.HandleFunc("/", routes.HomePage).Methods("GET")
+
+	router.HandleFunc("/icecream-test", routes.TestMongoDB).Methods("GET")
 
 	router.HandleFunc("/gardens/{version}/{id}", gardens_router.Gardens)
 
