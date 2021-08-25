@@ -1,16 +1,9 @@
 package rules_models
 
 type Rules struct {
-	ID string `bson:"_id,omitempty"`
-	Name string `bson:"name,omitempty"`
-	Description string `bson:"description,omitempty"`
-	GardenId string `bson:"gardenId,omitempty"`
-	IsRemoved bool `bson:"isRemoved,omitempty"`
-}
-
-type RulesPost struct {
-	Name string `json:"name"`
-	Description int64 `json:"description"`
-	GardenId string `json:"gardenId"`
-	IsRemoved string `json:"isRemoved"`
+	ID string `bson:"_id" json:"_id"`
+	Name string `bson:"name" json:"name"`
+	Description string `bson:"description" json:"description"`
+	GardenId string `bson:"gardenId" json:"gardenId"`
+	IsRemoved bool `bson:"isRemoved" json:"isRemoved"`
 }

@@ -11,11 +11,16 @@ import (
 )
 
 func CreateRules(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: create rules")
 	utils.EnableCors(&w)
-	var rulesPost rules_models.RulesPost
+	var rulesPost rules_models.Rules
 	_ = json.NewDecoder(r.Body).Decode(&rulesPost)
 
-	rules_controllers.CreateRules(rulesPost)
-	fmt.Fprintf(w, "Welcome to create rules!")
-	fmt.Println("Endpoint hit: create rules")
+	res, err := rules_controllers.CreateRules(rulesPost)
+	
+	if err != nil {
+		fmt.Fprintf(w, "Error creating rules!")
+	} else {
+		fmt.Fprintln(w, "Successfully created rules:", res.InsertedID)
+	}
 }
