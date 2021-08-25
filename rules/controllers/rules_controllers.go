@@ -1,7 +1,13 @@
 package rules_controllers
 
-import "log"
+import (
+	"fmt"
+	"log"
 
-func CreateRules()  {
-	log.Println("came into create rules controller")
+	rules_models "github.com/ice-cream-backend/rules/models"
+)
+
+func CreateRules(rulesPost rules_models.RulesPost)  {
+	log.Println("came into create rules controller with post:", rulesPost)
+	fmt.Printf("%+v\n", rulesPost)
 }

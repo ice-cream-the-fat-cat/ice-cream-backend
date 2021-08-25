@@ -7,3 +7,10 @@ type Rules struct {
 	GardenId string `bson:"gardenId,omitempty"`
 	IsRemoved bool `bson:"isRemoved,omitempty"`
 }
+
+type RulesPost struct {
+	Name string `json:"name"`
+	Description int64 `json:"description"`
+	GardenId string `json:"gardenId"`
+	IsRemoved string `json:"isRemoved"`
+}
