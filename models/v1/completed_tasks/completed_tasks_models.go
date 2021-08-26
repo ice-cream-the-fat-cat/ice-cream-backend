@@ -1,4 +1,4 @@
-package completedTasks_models
+package completed_tasks_models
 
 import (
 	"time"
