@@ -21,9 +21,28 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "Error creating rules!")
 	} else {
-		newRule := rules_controllers.GetRules(res.InsertedID)
+		newRule := rules_controllers.GetRulesById(res.InsertedID)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(newRule)
+	}
+}
+
+func CreateMultipleRules(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: create multiple rules")
+	utils.EnableCors(&w)
+
+	var multipleRulesPost []rules_models.Rules
+	_ = json.NewDecoder(r.Body).Decode(&multipleRulesPost)
+
+	res, err := rules_controllers.CreateMultiplesRules(multipleRulesPost)
+
+	if err != nil {
+		fmt.Fprintf(w, "Error creating multiple rules!")
+	} else {
+		newRules := rules_controllers.GetRulesByIds(res.InsertedIDs)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(newRules)
 	}
 }

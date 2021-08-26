@@ -3,9 +3,9 @@ package rules_controllers
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
+	mongo_connection "github.com/ice-cream-backend/database"
 	rules_models "github.com/ice-cream-backend/models/v1/rules"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,22 +14,12 @@ import (
 )
 
 func CreateRules(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
-	// TODO: Move MongoDB connection to utils
-	mongoURI := os.Getenv("MONGO_URI")
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10 * time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
 	defer client.Disconnect(ctx)
 
-	database := os.Getenv("MONGO_DB")
-	collection := client.Database(database).Collection("rules")
+	collection := mongo_connection.MongoCollection(client, "rules")
 
 	rulesPost.CreatedDate = time.Now()
 	rulesPost.LastUpdate = time.Now()
@@ -43,22 +33,39 @@ func CreateRules(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 	return res, insertErr
 }
 
-func GetRules(ruleId interface{}) rules_models.Rules {
-	mongoURI := os.Getenv("MONGO_URI")
+func CreateMultiplesRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10 * time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
 	defer client.Disconnect(ctx)
 
-	database := os.Getenv("MONGO_DB")
-	collection := client.Database(database).Collection("rules")
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	var populatedRules []interface{}
+	for _, rule := range multipleRulesPost {
+		rule.CreatedDate = time.Now()
+		rule.LastUpdate = time.Now()
+		populatedRules = append(populatedRules, rule)
+	}
+
+	opts := options.InsertMany().SetOrdered(false)
+	res, insertErr := collection.InsertMany(ctx, populatedRules, opts)
+
+	if insertErr != nil {
+		log.Println("Error creating new rule:", insertErr)
+	}
+
+	log.Println("res in multiple:", res)
+	return res, insertErr
+}
+
+func GetRulesById(ruleId interface{}) rules_models.Rules {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
 
 	var result rules_models.Rules
 	collection.FindOne(ctx, bson.D{
@@ -67,4 +74,28 @@ func GetRules(ruleId interface{}) rules_models.Rules {
 	).Decode(&result)
 
 	return result
+}
+
+func GetRulesByIds(ruleIds []interface{}) []rules_models.Rules {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	var results []rules_models.Rules
+	query := bson.M{"_id": bson.M{"$in": ruleIds}}
+	cursor, err := collection.Find(ctx, query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
 }
