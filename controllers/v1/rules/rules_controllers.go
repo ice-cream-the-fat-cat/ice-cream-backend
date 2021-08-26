@@ -28,7 +28,8 @@ func CreateRules(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 	}
 	defer client.Disconnect(ctx)
 
-	collection := client.Database("icecream-dev").Collection("rules")
+	database := os.Getenv("MONGO_DB")
+	collection := client.Database(database).Collection("rules")
 
 	rulesPost.CreatedDate = time.Now()
 	rulesPost.LastUpdate = time.Now()
