@@ -1,6 +1,6 @@
 package gardens_models
 
-type Rules struct {
+type Gardens struct {
 	ID             string `bson:"_id" json:"_id"`
 	Name           string `bson:"name" json:"name"`
 	Description    string `bson:"description" json:"description"`
