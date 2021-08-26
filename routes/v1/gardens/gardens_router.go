@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	gardens_controller "github.com/ice-cream-backend/controller/v1/gardens"
+	gardens_controller "github.com/ice-cream-backend/controllers/v1/gardens"
 )
 
 func GardensIdGet(w http.ResponseWriter, r *http.Request) {
