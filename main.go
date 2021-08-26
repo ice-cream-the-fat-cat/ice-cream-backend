@@ -19,9 +19,7 @@ func createServer() {
 
 	router.HandleFunc("/icecream-test", routes.TestMongoDB).Methods("GET")
 
-	router.HandleFunc("/api/v1/gardens/{id}", gardens_router.GardensIdGet).Methods("GET")
-	router.HandleFunc("/api/v1/gardens/user/{userid}", gardens_router.GardensUserIdGet).Methods("GET")
-	router.HandleFunc("/api/v1/gardens/", gardens_router.GardensPost).Methods("POST")
+	router.HandleFunc("/api/v1/gardens/", gardens_router.CreateGardens).Methods("POST")
 
 	router.HandleFunc("/api/v1/rules", rules_router.CreateRules).Methods("POST")
 
