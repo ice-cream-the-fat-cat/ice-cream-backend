@@ -2,7 +2,6 @@ package rules_controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -15,9 +14,7 @@ import (
 )
 
 func CreateRules(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
-	log.Println("came into create rules controller with post:", rulesPost)
-	fmt.Printf("%+v\n", rulesPost)
-
+	// TODO: Move MongoDB connection to utils
 	mongoURI := os.Getenv("MONGO_URI")
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
@@ -62,12 +59,10 @@ func GetRules(ruleId interface{}) rules_models.Rules {
 	collection := client.Database("icecream-dev").Collection("rules")
 
 	var result rules_models.Rules
-	res := collection.FindOne(ctx, bson.D{
+	collection.FindOne(ctx, bson.D{
 		primitive.E{Key:"_id", Value: ruleId},
 		},
 	).Decode(&result)
 
-	log.Println("res in findOne:", res)
-	log.Println("result:", result)
 	return result
 }
