@@ -1,33 +1,30 @@
 package gardens_router
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
-	gardens_controller "github.com/ice-cream-backend/controllers/v1/gardens"
+	gardens_controllers "github.com/ice-cream-backend/controllers/v1/gardens"
+	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
+	"github.com/ice-cream-backend/utils"
 )
 
-func GardensIdGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fmt.Fprintf(w, "GardensIdGet  version:%v  id:%v\n", vars["version"], vars["id"])
-	fmt.Println("Endpoint hit: gardens router")
+func CreateGardens(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: create gardens")
+	utils.EnableCors(&w)
 
-	integerId, _ := strconv.Atoi(vars["id"])
+	var createdGardensPost gardens_models.Gardens
+	_ = json.NewDecoder(r.Body).Decode(&createdGardensPost)
 
-	gardenData := gardens_controller.GetGardenData(integerId)
-	fmt.Println(gardenData)
-}
+	res, err := gardens_controllers.CreateGardens(createdGardensPost)
 
-func GardensUserIdGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fmt.Fprintf(w, "GardensUserIdGet  version:%v  userid:%v\n", vars["version"], vars["userid"])
-	fmt.Println("Endpoint hit: gardens router")
-}
+	if err != nil {
+		fmt.Fprintf(w, "Error creating garden!")
+	} else {
+		newCompletedTask := gardens_controllers.GetGardensById(res.InsertedID)
 
-func GardensPost(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fmt.Fprintf(w, "GardensPost  version:%v\n", vars["version"])
-	fmt.Println("Endpoint hit: gardens GardensPost")
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(newCompletedTask)
+	}
 }
