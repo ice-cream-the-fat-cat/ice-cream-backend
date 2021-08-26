@@ -29,7 +29,7 @@ func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneR
 	return res, insertErr
 }
 
-func GetGardensById(createGardenId interface{}) gardens_models.Gardens {
+func GetGardensByGardenId(createGardenId interface{}) gardens_models.Gardens {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -46,8 +46,8 @@ func GetGardensById(createGardenId interface{}) gardens_models.Gardens {
 	return result
 }
 
-func GetGardenByGardenId(gardenId interface{}) gardens_models.GardensFullyPopulated {
-	garden := GetGardensById(gardenId)
+func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFullyPopulated {
+	garden := GetGardensByGardenId(gardenId)
 	rules := rules_controllers.GetRulesByGardenId(gardenId)
 
 	var ruleIds []interface{}

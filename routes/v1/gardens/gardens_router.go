@@ -25,7 +25,7 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "Error creating garden!")
 	} else {
-		newGarden := gardens_controllers.GetGardensById(res.InsertedID)
+		newGarden := gardens_controllers.GetGardensByGardenId(res.InsertedID)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(newGarden)
@@ -45,7 +45,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("Invalid gardenId provided")
 	} else {
-		populatedGarden := gardens_controllers.GetGardenByGardenId(oid)
+		populatedGarden := gardens_controllers.GetPopulatedGardenByGardenId(oid)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(populatedGarden)

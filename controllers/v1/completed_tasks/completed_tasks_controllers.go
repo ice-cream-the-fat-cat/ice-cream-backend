@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CreateCompletedTasks(completedTasksPost completed_tasks_models.CompletedTasks) (*mongo.InsertOneResult, error) {
+func CreateCompletedTask(completedTasksPost completed_tasks_models.CompletedTasks) (*mongo.InsertOneResult, error) {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -33,7 +33,7 @@ func CreateCompletedTasks(completedTasksPost completed_tasks_models.CompletedTas
 	return res, insertErr
 }
 
-func GetCompletedTasksById(completedTaskId interface{}) completed_tasks_models.CompletedTasks {
+func GetCompletedTasksByCompletedTaskId(completedTaskId interface{}) completed_tasks_models.CompletedTasks {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
