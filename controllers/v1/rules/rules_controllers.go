@@ -99,3 +99,29 @@ func GetRulesByIds(ruleIds []interface{}) []rules_models.Rules {
 
 	return results
 }
+
+func GetRulesByGardenId(gardenId interface{}) []rules_models.Rules {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	var results []rules_models.Rules
+	query := bson.D{
+		primitive.E{Key:"gardenId", Value: gardenId},
+	}
+	cursor, err := collection.Find(ctx, query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
+}

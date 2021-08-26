@@ -10,6 +10,7 @@ import (
 	gardens_controllers "github.com/ice-cream-backend/controllers/v1/gardens"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
 	"github.com/ice-cream-backend/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func CreateGardens(w http.ResponseWriter, r *http.Request) {
@@ -24,10 +25,10 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "Error creating garden!")
 	} else {
-		newCompletedTask := gardens_controllers.GetGardensById(res.InsertedID)
+		newGarden := gardens_controllers.GetGardensById(res.InsertedID)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(newCompletedTask)
+		json.NewEncoder(w).Encode(newGarden)
 	}
 }
 
@@ -35,6 +36,18 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
-	gardenId := vars["gardenId"]
-	log.Println("gardenId:", gardenId)
+	paramsGardenId := vars["gardenId"]
+
+	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
+
+	if err != nil {
+		log.Println("Error converting params gardenId to ObjectId")
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode("Invalid gardenId provided")
+	} else {
+		populatedGarden := gardens_controllers.GetGardenByGardenId(oid)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(populatedGarden)
+	}
 }
