@@ -5,7 +5,12 @@
 ```
 PORT
 MONGO_URI
+MONGO_DB
 ```
+
+PORT = port to run the backend server
+MONGO_URI = the URI of MongoDB Atlas
+MONGO_DB = the database within MongoDB Atlas to connect to
 
 ## How to start the server
 

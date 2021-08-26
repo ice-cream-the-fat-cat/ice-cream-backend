@@ -56,7 +56,8 @@ func GetRules(ruleId interface{}) rules_models.Rules {
 	}
 	defer client.Disconnect(ctx)
 
-	collection := client.Database("icecream-dev").Collection("rules")
+	database := os.Getenv("MONGO_DB")
+	collection := client.Database(database).Collection("rules")
 
 	var result rules_models.Rules
 	collection.FindOne(ctx, bson.D{
