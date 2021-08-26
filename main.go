@@ -26,6 +26,7 @@ func createServer() {
 
 	// rules
 	router.HandleFunc("/api/v1/rules", rules_router.CreateRules).Methods("POST")
+	router.HandleFunc("/api/v1/rules/multiple", rules_router.CreateMultipleRules).Methods("POST")
 
 	// completedTasks
 	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST")
