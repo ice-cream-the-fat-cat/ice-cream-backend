@@ -24,6 +24,7 @@ func createServer() {
 	router.HandleFunc("/{version}/gardens/user/{userid}", gardens_router.GardensUserIdGet).Methods("GET")
 	router.HandleFunc("/{version}/gardens/", gardens_router.GardensPost).Methods("POST")
 
+	router.HandleFunc("/api/v1/gardens/gardenId/{gardenId}", gardens_router.GetGardenByGardenId).Methods("GET")
 	// rules
 	router.HandleFunc("/api/v1/rules", rules_router.CreateRules).Methods("POST")
 	router.HandleFunc("/api/v1/rules/multiple", rules_router.CreateMultipleRules).Methods("POST")

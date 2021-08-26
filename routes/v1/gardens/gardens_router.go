@@ -2,11 +2,13 @@ package gardens_router
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	gardens_controller "github.com/ice-cream-backend/controllers/v1/gardens"
+	"github.com/ice-cream-backend/utils"
 )
 
 func GardensIdGet(w http.ResponseWriter, r *http.Request) {
@@ -30,4 +32,12 @@ func GardensPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Fprintf(w, "GardensPost  version:%v\n", vars["version"])
 	fmt.Println("Endpoint hit: gardens GardensPost")
+}
+
+func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+
+	gardenId := vars["gardenId"]
+	log.Println("gardenId:", gardenId)
 }
