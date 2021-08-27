@@ -32,8 +32,7 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
-	fmt.Println("Endpoint hit: get gardens by garden id")
+func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
@@ -51,4 +50,16 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(populatedGarden)
 	}
+}
+
+func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+	paramsUserId := vars["userFireBaseId"]
+
+	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userGardens)
+
 }
