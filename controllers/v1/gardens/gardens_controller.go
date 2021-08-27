@@ -66,7 +66,7 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 	return populatedGarden
 }
 
-func GetUserGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
+func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 

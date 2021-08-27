@@ -57,7 +57,7 @@ func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 	paramsUserId := vars["userFireBaseId"]
 
-	userGardens := gardens_controllers.GetUserGardensByUserId(paramsUserId)
+	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userGardens)
