@@ -20,12 +20,12 @@ func createServer() {
 
 	router.HandleFunc("/icecream-test", routes.TestMongoDB).Methods("GET")
 
-	router.HandleFunc("/{version}/gardens/{id}", gardens_router.GardensIdGet).Methods("GET")
-	router.HandleFunc("/{version}/gardens/user/{userid}", gardens_router.GardensUserIdGet).Methods("GET")
-	router.HandleFunc("/{version}/gardens/", gardens_router.GardensPost).Methods("POST")
+	router.HandleFunc("/api/v1/gardens/", gardens_router.CreateGardens).Methods("POST")
+	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.GetGardenByGardenId).Methods("GET")
 
 	// rules
-	router.HandleFunc("/api/v1/rules", rules_router.CreateRules).Methods("POST")
+	router.HandleFunc("/api/v1/rules", rules_router.CreateRule).Methods("POST")
+	router.HandleFunc("/api/v1/rules/bulk", rules_router.CreateRules).Methods("POST")
 
 	// completedTasks
 	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST")
