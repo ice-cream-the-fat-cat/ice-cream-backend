@@ -13,7 +13,11 @@ type Gardens struct {
 }
 
 type GardensFullyPopulated struct {
-	Garden Gardens `json:"garden"`
-	Rules []rules_models.Rules `json:"rules"`
+	Garden         Gardens                                 `json:"garden"`
+	Rules          []rules_models.Rules                    `json:"rules"`
 	CompletedTasks []completed_tasks_models.CompletedTasks `json:"completedTasks"`
+}
+
+type UserGardens struct {
+	UserGardens []Gardens `json:"garden"`
 }
