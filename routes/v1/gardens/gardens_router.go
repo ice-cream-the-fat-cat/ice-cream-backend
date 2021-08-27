@@ -33,6 +33,7 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
+	fmt.Println("Endpoint hit: get gardens by garden id")
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
