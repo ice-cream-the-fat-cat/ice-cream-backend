@@ -30,7 +30,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/rules/bulk", rules_router.CreateRules).Methods("POST", "OPTIONS")
 
 	// completedTasks
-	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST")
+	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST", "OPTIONS")
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(":"+port, router))
