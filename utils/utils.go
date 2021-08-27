@@ -21,5 +21,5 @@ func EnableCors(w *http.ResponseWriter) {
 	// TODO: Limit access to just frontend domains
 	header.Set("Access-Control-Allow-Origin", "*")
 	header.Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, http://localhost:3000")
+	header.Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
