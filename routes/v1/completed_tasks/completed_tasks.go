@@ -14,17 +14,19 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
 	fmt.Println("Endpoint hit: create completedTasks")
 	utils.EnableCors(&w)
 
-	var completedTasksPost completed_tasks_models.CompletedTasks
-	_ = json.NewDecoder(r.Body).Decode(&completedTasksPost)
-
-	res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
-
-	if err != nil {
-		fmt.Fprintf(w, "Error creating completedTasks!")
-	} else {
-		newCompletedTask := completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(newCompletedTask)
+	if r.Method == "POST" {
+		var completedTasksPost completed_tasks_models.CompletedTasks
+		_ = json.NewDecoder(r.Body).Decode(&completedTasksPost)
+	
+		res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
+	
+		if err != nil {
+			fmt.Fprintf(w, "Error creating completedTasks!")
+		} else {
+			newCompletedTask := completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
+	
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(newCompletedTask)
+		}
 	}
 }
