@@ -17,7 +17,3 @@ type GardensFullyPopulated struct {
 	Rules          []rules_models.Rules                    `json:"rules"`
 	CompletedTasks []completed_tasks_models.CompletedTasks `json:"completedTasks"`
 }
-
-type UserGardens struct {
-	UserGardens []Gardens `json:"garden"`
-}
