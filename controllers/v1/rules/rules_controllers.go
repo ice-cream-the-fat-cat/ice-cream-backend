@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CreateRules(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
+func CreateRule(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -33,7 +33,7 @@ func CreateRules(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 	return res, insertErr
 }
 
-func CreateMultiplesRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResult, error) {
+func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResult, error) {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -76,7 +76,7 @@ func GetRulesById(ruleId interface{}) rules_models.Rules {
 	return result
 }
 
-func GetRulesByIds(ruleIds []interface{}) []rules_models.Rules {
+func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -86,6 +86,32 @@ func GetRulesByIds(ruleIds []interface{}) []rules_models.Rules {
 
 	var results []rules_models.Rules
 	query := bson.M{"_id": bson.M{"$in": ruleIds}}
+	cursor, err := collection.Find(ctx, query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
+}
+
+func GetRulesByGardenId(gardenId interface{}) []rules_models.Rules {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	var results []rules_models.Rules
+	query := bson.D{
+		primitive.E{Key:"gardenId", Value: gardenId},
+	}
 	cursor, err := collection.Find(ctx, query)
 	if err != nil {
 		log.Println(err)

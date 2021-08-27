@@ -17,12 +17,12 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
 	var completedTasksPost completed_tasks_models.CompletedTasks
 	_ = json.NewDecoder(r.Body).Decode(&completedTasksPost)
 
-	res, err := completed_tasks_controllers.CreateCompletedTasks(completedTasksPost)
+	res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
 
 	if err != nil {
 		fmt.Fprintf(w, "Error creating completedTasks!")
 	} else {
-		newCompletedTask := completed_tasks_controllers.GetCompletedTasksById(res.InsertedID)
+		newCompletedTask := completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(newCompletedTask)

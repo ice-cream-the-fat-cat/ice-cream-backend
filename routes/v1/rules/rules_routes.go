@@ -10,13 +10,13 @@ import (
 	"github.com/ice-cream-backend/utils"
 )
 
-func CreateRules(w http.ResponseWriter, r *http.Request) {
+func CreateRule(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: create rules")
 	utils.EnableCors(&w)
 	var rulesPost rules_models.Rules
 	_ = json.NewDecoder(r.Body).Decode(&rulesPost)
 
-	res, err := rules_controllers.CreateRules(rulesPost)
+	res, err := rules_controllers.CreateRule(rulesPost)
 	
 	if err != nil {
 		fmt.Fprintf(w, "Error creating rules!")
@@ -28,19 +28,19 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func CreateMultipleRules(w http.ResponseWriter, r *http.Request) {
+func CreateRules(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: create multiple rules")
 	utils.EnableCors(&w)
 
 	var multipleRulesPost []rules_models.Rules
 	_ = json.NewDecoder(r.Body).Decode(&multipleRulesPost)
 
-	res, err := rules_controllers.CreateMultiplesRules(multipleRulesPost)
+	res, err := rules_controllers.CreateRules(multipleRulesPost)
 
 	if err != nil {
 		fmt.Fprintf(w, "Error creating multiple rules!")
 	} else {
-		newRules := rules_controllers.GetRulesByIds(res.InsertedIDs)
+		newRules := rules_controllers.GetRulesByRuleIds(res.InsertedIDs)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(newRules)
