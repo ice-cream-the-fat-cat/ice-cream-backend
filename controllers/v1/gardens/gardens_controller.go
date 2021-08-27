@@ -2,7 +2,6 @@ package gardens_controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
@@ -75,7 +74,6 @@ func GetUserGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
-	fmt.Println(userFireBaseId)
 	var results []gardens_models.Gardens
 	query := bson.D{
 		primitive.E{Key: "userFireBaseId", Value: userFireBaseId},
@@ -87,7 +85,6 @@ func GetUserGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens
 
 	cursorErr := cursor.All(context.TODO(), &results)
 
-	fmt.Println(results)
 	if cursorErr != nil {
 		log.Println(cursorErr)
 	}
