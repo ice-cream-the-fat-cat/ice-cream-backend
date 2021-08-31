@@ -1,6 +1,7 @@
 package gardens_controllers
 
 import (
+	"context"
 	"log"
 
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
@@ -63,4 +64,30 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 	populatedGarden.CompletedTasks = completedTasks
 
 	return populatedGarden
+}
+
+func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "gardens")
+
+	var results []gardens_models.Gardens
+	query := bson.D{
+		primitive.E{Key: "userFireBaseId", Value: userFireBaseId},
+	}
+	cursor, err := collection.Find(ctx, query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
 }

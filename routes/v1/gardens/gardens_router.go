@@ -14,25 +14,27 @@ import (
 )
 
 func CreateGardens(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint hit: create gardens")
+	fmt.Println("Endpoint hit: create gardens for method:", r.Method)
 	utils.EnableCors(&w)
+	if r.Method == "POST" {
 
-	var createdGardensPost gardens_models.Gardens
-	_ = json.NewDecoder(r.Body).Decode(&createdGardensPost)
+		var createdGardensPost gardens_models.Gardens
+		_ = json.NewDecoder(r.Body).Decode(&createdGardensPost)
 
-	res, err := gardens_controllers.CreateGardens(createdGardensPost)
+		res, err := gardens_controllers.CreateGardens(createdGardensPost)
 
-	if err != nil {
-		fmt.Fprintf(w, "Error creating garden!")
-	} else {
-		newGarden := gardens_controllers.GetGardensByGardenId(res.InsertedID)
+		if err != nil {
+			fmt.Fprintf(w, "Error creating garden!")
+		} else {
+			newGarden := gardens_controllers.GetGardensByGardenId(res.InsertedID)
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(newGarden)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(newGarden)
+		}
 	}
 }
 
-func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
+func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
@@ -50,4 +52,16 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(populatedGarden)
 	}
+}
+
+func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+	paramsUserId := vars["userFireBaseId"]
+
+	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userGardens)
+
 }
