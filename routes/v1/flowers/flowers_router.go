@@ -9,10 +9,10 @@ import (
 	"github.com/ice-cream-backend/utils"
 )
 
-func GetFlowerList(w http.ResponseWriter, r *http.Request) {
+func GetFlower(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 
-	flowerList := flowers_controllers.GetFlowerList()
+	flowerList := flowers_controllers.GetFlower()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(flowerList)
