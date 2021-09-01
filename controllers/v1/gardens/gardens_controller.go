@@ -135,11 +135,17 @@ func DeleteGardenByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
 	query := bson.D{
 		primitive.E{Key: "_id", Value: gardenId},
 	}
-	res, err := collection.DeleteOne(context.TODO(), query)
+	gardenRes, gardenErr := collection.DeleteOne(context.TODO(), query)
 
-	if err != nil {
-		log.Println(err)
+	if gardenErr != nil {
+		log.Println(gardenErr)
 	}
 
-	return res, err
+	_, rulesErr := rules_controllers.DeleteRulesByGardenId(gardenId)
+
+	if rulesErr != nil {
+		log.Println("Error deleting rules for ID", gardenId, rulesErr)
+	}
+
+	return gardenRes, gardenErr
 }

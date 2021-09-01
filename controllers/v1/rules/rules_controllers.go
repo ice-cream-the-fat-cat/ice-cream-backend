@@ -146,3 +146,23 @@ func UpdateRuleByRuleId(ruleId interface{}, rule rules_models.Rules) (*mongo.Upd
 
 	return result, updateErr
 }
+
+func DeleteRulesByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	query := bson.D{
+		primitive.E{Key: "gardenId", Value: gardenId},
+	}
+	res, err := collection.DeleteMany(context.TODO(), query)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	return res, err
+}
