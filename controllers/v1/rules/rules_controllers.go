@@ -55,11 +55,10 @@ func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResul
 		log.Println("Error creating new rule:", insertErr)
 	}
 
-	log.Println("res in multiple:", res)
 	return res, insertErr
 }
 
-func GetRulesById(ruleId interface{}) rules_models.Rules {
+func GetRulesByRuleId(ruleId interface{}) rules_models.Rules {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -124,4 +123,26 @@ func GetRulesByGardenId(gardenId interface{}) []rules_models.Rules {
 	}
 
 	return results
+}
+
+func UpdateRuleByRuleId(ruleId interface{}, rule rules_models.Rules) (*mongo.UpdateResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	updatedRule := bson.M{
+    "$set": bson.M{
+      "name": rule.Name,
+      "description": rule.Description,
+			"isRemoved": rule.IsRemoved,
+			"lastUpdate": time.Now(),
+    },
+  }
+
+	result, updateErr := collection.UpdateByID(ctx, ruleId, updatedRule)
+
+	return result, updateErr
 }
