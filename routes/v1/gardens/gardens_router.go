@@ -73,6 +73,29 @@ func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
 		iceCreamError.Info = "Invalid gardenId provided"
 		json.NewEncoder(w).Encode(iceCreamError)
 	} else {
-		
+		res, err := gardens_controllers.UpdateGardenByGardenId(oid, garden)
+
+		if err != nil {
+			log.Println("Error updating garden:", err)
+			w.Header().Set("Content-Type", "application/json")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Error updating garden"
+			json.NewEncoder(w).Encode(iceCreamError)
+		}
+
+		if res.MatchedCount != 0 {
+			updatedGarden := gardens_controllers.GetGardensByGardenId(oid)
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(updatedGarden)
+		} else {
+			log.Println("could not find matching garden ID:", oid)
+			w.Header().Set("Content-Type", "application/json")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = fmt.Sprintf("could not find matching garden ID: %s", oid)
+			iceCreamError.Info = "Error updating rule: no matching oid"
+			json.NewEncoder(w).Encode(iceCreamError)
+		}
 	}
 }
