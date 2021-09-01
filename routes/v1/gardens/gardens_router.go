@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	gardens_controllers "github.com/ice-cream-backend/controllers/v1/gardens"
+	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
 	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -49,5 +50,29 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(populatedGarden)
+	}
+}
+
+func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: update garden by id")
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+
+	var garden gardens_models.Gardens
+	_ = json.NewDecoder(r.Body).Decode(&garden)
+
+	paramsGardenId := vars["gardenId"]
+
+	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
+
+	if err != nil {
+		log.Println("Error converting params gardenId to ObjectId:", err)
+		w.Header().Set("Content-Type", "application/json")
+		var iceCreamError errors_models.IceCreamErrors
+		iceCreamError.Error = err.Error()
+		iceCreamError.Info = "Invalid gardenId provided"
+		json.NewEncoder(w).Encode(iceCreamError)
+	} else {
+		
 	}
 }

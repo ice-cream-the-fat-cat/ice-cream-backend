@@ -50,8 +50,8 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func EditRuleByRuleId(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint hit: create edit rule by id")
+func UpdateRuleByRuleId(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: update rule by id")
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
