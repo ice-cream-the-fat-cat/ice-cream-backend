@@ -28,10 +28,17 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Fprintf(w, "Error creating garden!")
 		} else {
-			newGarden := gardens_controllers.GetGardensByGardenId(res.InsertedID)
+			newGarden, err := gardens_controllers.GetGardensByGardenId(res.InsertedID)
 
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(newGarden)
+			if err != nil {
+				var iceCreamError errors_models.IceCreamErrors
+				iceCreamError.Error = err.Error()
+				iceCreamError.Info = "Invalid gardenId provided"
+				json.NewEncoder(w).Encode(iceCreamError)
+			} else {
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(newGarden)
+			}
 		}
 	}
 }
@@ -49,10 +56,17 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("Invalid gardenId provided")
 	} else {
-		populatedGarden := gardens_controllers.GetPopulatedGardenByGardenId(oid)
+		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenId(oid)
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(populatedGarden)
+		if err != nil {
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Invalid gardenId provided"
+			json.NewEncoder(w).Encode(iceCreamError)
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(populatedGarden)
+		}
 	}
 }
 
@@ -62,6 +76,10 @@ func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
 	paramsUserId := vars["userFireBaseId"]
 
 	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
+
+	if len(userGardens) == 0 {
+		userGardens = []gardens_models.Gardens{}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(userGardens)
@@ -99,7 +117,7 @@ func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if res.MatchedCount != 0 {
-			updatedGarden := gardens_controllers.GetGardensByGardenId(oid)
+			updatedGarden, _ := gardens_controllers.GetGardensByGardenId(oid)
 
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(updatedGarden)

@@ -36,7 +36,7 @@ func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneR
 	return res, insertErr
 }
 
-func GetGardensByGardenId(createGardenId interface{}) gardens_models.Gardens {
+func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, error) {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -45,16 +45,27 @@ func GetGardensByGardenId(createGardenId interface{}) gardens_models.Gardens {
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
 	var result gardens_models.Gardens
-	collection.FindOne(ctx, bson.D{
+	err := collection.FindOne(ctx, bson.D{
 		primitive.E{Key: "_id", Value: createGardenId},
 	},
 	).Decode(&result)
+	
+	if err != nil {
+		log.Println("err in findOne:", err)
+	}
 
-	return result
+	return result, err
 }
 
-func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFullyPopulated {
-	garden := GetGardensByGardenId(gardenId)
+func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensFullyPopulated, error) {
+	garden, err := GetGardensByGardenId(gardenId)
+
+	var populatedGarden gardens_models.GardensFullyPopulated
+
+	if err != nil {
+		return populatedGarden, err
+	}
+
 	rules := rules_controllers.GetRulesByGardenId(gardenId)
 
 	var ruleIds []interface{}
@@ -62,7 +73,6 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 		ruleIds = append(ruleIds, rule.ID)
 	}
 
-	var populatedGarden gardens_models.GardensFullyPopulated
 	populatedGarden.Garden = garden
 
 	if len(ruleIds) == 0 {
@@ -74,7 +84,7 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 		populatedGarden.CompletedTasks = completedTasks
 	}
 
-	return populatedGarden
+	return populatedGarden, nil
 }
 
 func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
