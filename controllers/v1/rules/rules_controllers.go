@@ -7,6 +7,7 @@ import (
 
 	mongo_connection "github.com/ice-cream-backend/database"
 	rules_models "github.com/ice-cream-backend/models/v1/rules"
+	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,6 +35,7 @@ func CreateRule(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 }
 
 func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResult, error) {
+	start := utils.StartPerformanceTest()
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -55,6 +57,7 @@ func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResul
 		log.Println("Error creating new rule:", insertErr)
 	}
 
+	utils.StopPerformanceTest(start, "Successful create rules (controller)")
 	return res, insertErr
 }
 
@@ -76,6 +79,7 @@ func GetRulesByRuleId(ruleId interface{}) rules_models.Rules {
 }
 
 func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
+	start := utils.StartPerformanceTest()
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -96,6 +100,7 @@ func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
 		log.Println(cursorErr)
 	}
 
+	utils.StopPerformanceTest(start, "Successful get rulesByRuleIds (controller)")
 	return results
 }
 

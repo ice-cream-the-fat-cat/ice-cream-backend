@@ -39,6 +39,7 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 
 	if r.Method == "POST" {
+		start := utils.StartPerformanceTest()
 		var multipleRulesPost []rules_models.Rules
 		_ = json.NewDecoder(r.Body).Decode(&multipleRulesPost)
 	
@@ -51,6 +52,7 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(newRules)
+			utils.StopPerformanceTest(start, "Successful create rules (routes)")
 		}
 	}
 }

@@ -11,12 +11,14 @@ import (
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
 	rules_models "github.com/ice-cream-backend/models/v1/rules"
+	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneResult, error) {
+	start := utils.StartPerformanceTest()
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -33,10 +35,12 @@ func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneR
 		log.Println("Error creating new createGardens:", insertErr)
 	}
 
+	utils.StopPerformanceTest(start, "Successful create garden (controller)")
 	return res, insertErr
 }
 
 func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, error) {
+	start := utils.StartPerformanceTest()
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -54,6 +58,7 @@ func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, e
 		log.Println("err in findOne:", err)
 	}
 
+	utils.StopPerformanceTest(start, "Successful get gardensByGardenId (controller)")
 	return result, err
 }
 
