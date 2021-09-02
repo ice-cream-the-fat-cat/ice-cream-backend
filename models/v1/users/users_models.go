@@ -1,8 +1,10 @@
 package users_models
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Users struct {
-	ID                string   `bson:"_id,omitempty" json:"_id"`
-	UserFireBaseId    string   `bson:"userFireBaseId" json:"userFireBaseId"`
-	NumCoins          int      `bson:"numCoins" json:"numCoins"`
-	FlowerCollections []string `bson:"flowerCollections" json:"flowerCollections"`
+	ID                primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
+	UserFireBaseId    string             `bson:"userFireBaseId" json:"userFireBaseId"`
+	NumCoins          int                `bson:"numCoins" json:"numCoins"`
+	FlowerCollections []string           `bson:"flowerCollections" json:"flowerCollections"`
 }
