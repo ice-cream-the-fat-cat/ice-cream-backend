@@ -26,7 +26,7 @@ func CreateRule(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Fprintf(w, "Error creating rules!")
 		} else {
-			newRule := rules_controllers.GetRulesById(res.InsertedID)
+			newRule := rules_controllers.GetRulesByRuleId(res.InsertedID)
 	
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(newRule)
@@ -55,8 +55,8 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func EditRuleByRuleId(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint hit: create edit rule by id")
+func UpdateRuleByRuleId(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: update rule by id")
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 

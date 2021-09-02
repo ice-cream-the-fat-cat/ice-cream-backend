@@ -3,11 +3,14 @@ package gardens_controllers
 import (
 	"context"
 	"log"
+	"time"
 
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
 	rules_controllers "github.com/ice-cream-backend/controllers/v1/rules"
 	mongo_connection "github.com/ice-cream-backend/database"
+	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
+	rules_models "github.com/ice-cream-backend/models/v1/rules"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +23,9 @@ func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneR
 	defer client.Disconnect(ctx)
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
+
+	createdGardensPost.CreatedDate = time.Now()
+	createdGardensPost.LastUpdate = time.Now()
 
 	res, insertErr := collection.InsertOne(ctx, createdGardensPost)
 
@@ -56,14 +62,40 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 		ruleIds = append(ruleIds, rule.ID)
 	}
 
-	completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIds(ruleIds)
-
 	var populatedGarden gardens_models.GardensFullyPopulated
 	populatedGarden.Garden = garden
-	populatedGarden.Rules = rules
-	populatedGarden.CompletedTasks = completedTasks
+
+	if len(ruleIds) == 0 {
+		populatedGarden.Rules = []rules_models.Rules{}
+		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
+	} else{
+		populatedGarden.Rules = rules
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIds(ruleIds)
+		populatedGarden.CompletedTasks = completedTasks
+	}
 
 	return populatedGarden
+}
+
+func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens) (*mongo.UpdateResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "gardens")
+
+	updatedGarden := bson.M{
+		"$set": bson.M{
+			"name": garden.Name,
+			"description": garden.Description,
+			"lastUpdate": time.Now(),
+		},
+	}
+
+	result, updateErr := collection.UpdateByID(ctx, gardenId, updatedGarden)
+
+	return result, updateErr
 }
 
 func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
