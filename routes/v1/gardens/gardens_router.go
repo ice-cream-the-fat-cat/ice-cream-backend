@@ -46,6 +46,7 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
+	start := utils.StartPerformanceTest()
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
@@ -68,6 +69,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(populatedGarden)
+			utils.StopPerformanceTest(start, fmt.Sprintf("Successfully got fully populated garden for gardenId %s ", paramsGardenId))
 		}
 	}
 }
