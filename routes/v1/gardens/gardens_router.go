@@ -10,6 +10,7 @@ import (
 	gardens_controllers "github.com/ice-cream-backend/controllers/v1/gardens"
 	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
+	utils_models "github.com/ice-cream-backend/models/v1/utils"
 	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -53,6 +54,17 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(populatedGarden)
 	}
+}
+
+func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+	paramsUserId := vars["userFireBaseId"]
+
+	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userGardens)
 }
 
 func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
@@ -101,14 +113,48 @@ func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
+
+func DeleteGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
+	fmt.Println("Endpoint hit: delete garden by id")
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
-	paramsUserId := vars["userFireBaseId"]
 
-	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
+	paramsGardenId := vars["gardenId"]
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(userGardens)
+	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
+	if err != nil {
+		log.Println("Error converting params gardenId to ObjectId:", err)
+		w.Header().Set("Content-Type", "application/json")
+		var iceCreamError errors_models.IceCreamErrors
+		iceCreamError.Error = err.Error()
+		iceCreamError.Info = "Invalid gardenId provided"
+		json.NewEncoder(w).Encode(iceCreamError)
+	} else {
+		res, err := gardens_controllers.DeleteGardenByGardenId(oid)
+
+		if err != nil {
+			log.Println("Error deleting garden:", err)
+			w.Header().Set("Content-Type", "application/json")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Error deleting garden"
+			json.NewEncoder(w).Encode(iceCreamError)
+		}
+
+		if res.DeletedCount == 1 {
+			var deleteResult utils_models.DeleteResult
+			deleteResult.Info = "Successfully deleted Garden"
+			deleteResult.Success = true
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(deleteResult)
+		} else {
+			log.Println("could not find matching garden ID:", oid)
+			w.Header().Set("Content-Type", "application/json")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = fmt.Sprintf("could not find matching garden ID: %s", oid)
+			iceCreamError.Info = "Error deleting rule: no matching oid"
+			json.NewEncoder(w).Encode(iceCreamError)
+		}
+	}
 }

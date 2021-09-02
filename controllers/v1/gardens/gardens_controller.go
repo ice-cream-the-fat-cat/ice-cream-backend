@@ -77,27 +77,6 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 	return populatedGarden
 }
 
-func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens) (*mongo.UpdateResult, error) {
-	ctx := mongo_connection.ContextForMongo()
-	client := mongo_connection.MongoConnection(ctx)
-
-	defer client.Disconnect(ctx)
-
-	collection := mongo_connection.MongoCollection(client, "gardens")
-
-	updatedGarden := bson.M{
-		"$set": bson.M{
-			"name": garden.Name,
-			"description": garden.Description,
-			"lastUpdate": time.Now(),
-		},
-	}
-
-	result, updateErr := collection.UpdateByID(ctx, gardenId, updatedGarden)
-
-	return result, updateErr
-}
-
 func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
@@ -122,4 +101,51 @@ func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
 	}
 
 	return results
+}
+
+func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens) (*mongo.UpdateResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "gardens")
+
+	updatedGarden := bson.M{
+		"$set": bson.M{
+			"name": garden.Name,
+			"description": garden.Description,
+			"lastUpdate": time.Now(),
+		},
+	}
+
+	result, updateErr := collection.UpdateByID(ctx, gardenId, updatedGarden)
+
+	return result, updateErr
+}
+
+func DeleteGardenByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "gardens")
+
+	query := bson.D{
+		primitive.E{Key: "_id", Value: gardenId},
+	}
+	gardenRes, gardenErr := collection.DeleteOne(context.TODO(), query)
+
+	if gardenErr != nil {
+		log.Println(gardenErr)
+	}
+
+	_, rulesErr := rules_controllers.DeleteRulesByGardenId(gardenId)
+
+	if rulesErr != nil {
+		log.Println("Error deleting rules for ID", gardenId, rulesErr)
+	}
+
+	return gardenRes, gardenErr
 }
