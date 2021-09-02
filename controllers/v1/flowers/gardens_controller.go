@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetFlower() []flowers_models.Flowers {
+func GetFlowers() []flowers_models.Flowers {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 

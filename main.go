@@ -35,7 +35,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST", "OPTIONS")
 
 	// flowers
-	router.HandleFunc("/api/v1/flowers", flowers_router.GetFlower).Methods("GET")
+	router.HandleFunc("/api/v1/flowers", flowers_router.GetFlowers).Methods("GET")
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(":"+port, router))
