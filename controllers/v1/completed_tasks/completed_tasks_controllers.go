@@ -14,10 +14,11 @@ import (
 )
 
 func CreateCompletedTask(completedTasksPost completed_tasks_models.CompletedTasks) (*mongo.InsertOneResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
@@ -34,10 +35,11 @@ func CreateCompletedTask(completedTasksPost completed_tasks_models.CompletedTask
 }
 
 func GetCompletedTasksByCompletedTaskId(completedTaskId interface{}) completed_tasks_models.CompletedTasks {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
@@ -51,10 +53,11 @@ func GetCompletedTasksByCompletedTaskId(completedTaskId interface{}) completed_t
 }
 
 func GetCompletedTasksByRuleIds(ruleIds []interface{}) []completed_tasks_models.CompletedTasks {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
@@ -78,10 +81,11 @@ func GetCompletedTasksByRuleIds(ruleIds []interface{}) []completed_tasks_models.
 }
 
 func DeleteCompletedTaskByCompletedTaskId(completedTaskId interface{}) (*mongo.DeleteResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
