@@ -13,7 +13,7 @@ type Rules struct {
 	Description string `bson:"description" json:"description"`
 	GardenId primitive.ObjectID `bson:"gardenId" json:"gardenId"`
 	IsRemoved bool `bson:"isRemoved" json:"isRemoved"`
-	CreatedDate time.Time `bson:"createdAt" json:"createdAt"`
+	CreatedDate time.Time `bson:"createdDate" json:"createdDate"`
 	LastUpdate time.Time `bson:"lastUpdate" json:"lastUpdate"`
 }
 

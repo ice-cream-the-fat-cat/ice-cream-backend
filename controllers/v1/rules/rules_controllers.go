@@ -7,6 +7,7 @@ import (
 
 	mongo_connection "github.com/ice-cream-backend/database"
 	rules_models "github.com/ice-cream-backend/models/v1/rules"
+	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,6 +35,7 @@ func CreateRule(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 }
 
 func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResult, error) {
+	start := utils.StartPerformanceTest()
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -55,11 +57,11 @@ func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResul
 		log.Println("Error creating new rule:", insertErr)
 	}
 
-	log.Println("res in multiple:", res)
+	utils.StopPerformanceTest(start, "Successful create rules (controller)")
 	return res, insertErr
 }
 
-func GetRulesById(ruleId interface{}) rules_models.Rules {
+func GetRulesByRuleId(ruleId interface{}) rules_models.Rules {
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -77,6 +79,7 @@ func GetRulesById(ruleId interface{}) rules_models.Rules {
 }
 
 func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
+	start := utils.StartPerformanceTest()
 	ctx := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -97,6 +100,7 @@ func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
 		log.Println(cursorErr)
 	}
 
+	utils.StopPerformanceTest(start, "Successful get rulesByRuleIds (controller)")
 	return results
 }
 
@@ -124,4 +128,46 @@ func GetRulesByGardenId(gardenId interface{}) []rules_models.Rules {
 	}
 
 	return results
+}
+
+func UpdateRuleByRuleId(ruleId interface{}, rule rules_models.Rules) (*mongo.UpdateResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	updatedRule := bson.M{
+    "$set": bson.M{
+      "name": rule.Name,
+      "description": rule.Description,
+			"isRemoved": rule.IsRemoved,
+			"lastUpdate": time.Now(),
+    },
+  }
+
+	result, updateErr := collection.UpdateByID(ctx, ruleId, updatedRule)
+
+	return result, updateErr
+}
+
+func DeleteRulesByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "rules")
+
+	query := bson.D{
+		primitive.E{Key: "gardenId", Value: gardenId},
+	}
+	res, err := collection.DeleteMany(context.TODO(), query)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	return res, err
 }
