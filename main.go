@@ -40,6 +40,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/flowers", flowers_router.GetFlowers).Methods("GET")
 
 	port := os.Getenv("PORT")
+	log.Println("starting http server on port:", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
@@ -48,5 +49,6 @@ func init() {
 }
 
 func main() {
+	log.Println("came into main")
 	createServer()
 }
