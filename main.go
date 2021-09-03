@@ -49,6 +49,5 @@ func init() {
 }
 
 func main() {
-	log.Println("came into main")
 	createServer()
 }
