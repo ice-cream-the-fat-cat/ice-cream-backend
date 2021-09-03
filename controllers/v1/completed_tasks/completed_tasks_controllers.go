@@ -76,3 +76,23 @@ func GetCompletedTasksByRuleIds(ruleIds []interface{}) []completed_tasks_models.
 
 	return results
 }
+
+func DeleteCompletedTaskByCompletedTaskId(completedTaskId interface{}) (*mongo.DeleteResult, error) {
+	ctx := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+
+	collection := mongo_connection.MongoCollection(client, "completedTasks")
+
+	query := bson.D{
+		primitive.E{Key: "_id", Value: completedTaskId},
+	}
+	completedTaskRes, completedTaskErr := collection.DeleteOne(context.TODO(), query)
+
+	if completedTaskErr != nil {
+		log.Println("Error deleting completedTask:", completedTaskErr)
+	}
+
+	return completedTaskRes, completedTaskErr
+}
