@@ -94,7 +94,7 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensF
 	return populatedGarden, nil
 }
 
-func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
+func GetGardensByUserId(fireBaseUserId interface{}) []gardens_models.Gardens {
 	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -105,7 +105,7 @@ func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
 
 	var results []gardens_models.Gardens
 	query := bson.D{
-		primitive.E{Key: "userFireBaseId", Value: userFireBaseId},
+		primitive.E{Key: "fireBaseUserId", Value: fireBaseUserId},
 	}
 	cursor, err := collection.Find(ctx, query)
 	if err != nil {
