@@ -10,10 +10,11 @@ import (
 )
 
 func GetFlowers() []flowers_models.Flowers {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "flowers")
 

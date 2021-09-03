@@ -15,10 +15,11 @@ import (
 )
 
 func CreateRule(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
@@ -36,10 +37,11 @@ func CreateRule(rulesPost rules_models.Rules) (*mongo.InsertOneResult, error) {
 
 func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResult, error) {
 	start := utils.StartPerformanceTest()
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
@@ -62,10 +64,11 @@ func CreateRules(multipleRulesPost []rules_models.Rules) (*mongo.InsertManyResul
 }
 
 func GetRulesByRuleId(ruleId interface{}) rules_models.Rules {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
@@ -80,10 +83,11 @@ func GetRulesByRuleId(ruleId interface{}) rules_models.Rules {
 
 func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
 	start := utils.StartPerformanceTest()
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
@@ -105,10 +109,11 @@ func GetRulesByRuleIds(ruleIds []interface{}) []rules_models.Rules {
 }
 
 func GetRulesByGardenId(gardenId interface{}) []rules_models.Rules {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
@@ -131,10 +136,11 @@ func GetRulesByGardenId(gardenId interface{}) []rules_models.Rules {
 }
 
 func UpdateRuleByRuleId(ruleId interface{}, rule rules_models.Rules) (*mongo.UpdateResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
@@ -153,10 +159,11 @@ func UpdateRuleByRuleId(ruleId interface{}, rule rules_models.Rules) (*mongo.Upd
 }
 
 func DeleteRulesByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "rules")
 
