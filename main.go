@@ -36,6 +36,7 @@ func createServer() {
 
 	// completedTasks
 	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/v1/completedTasks/{completedTaskId}", completed_tasks_router.DeleteCompletedTaskByCompletedTaskId).Methods("DELETE")
 
 	// flowers
 	router.HandleFunc("/api/v1/flowers", flowers_router.GetFlowers).Methods("GET")

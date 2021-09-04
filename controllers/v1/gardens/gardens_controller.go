@@ -11,16 +11,19 @@ import (
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
 	rules_models "github.com/ice-cream-backend/models/v1/rules"
+	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	start := utils.StartPerformanceTest()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
@@ -33,28 +36,43 @@ func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneR
 		log.Println("Error creating new createGardens:", insertErr)
 	}
 
+	utils.StopPerformanceTest(start, "Successful create garden (controller)")
 	return res, insertErr
 }
 
-func GetGardensByGardenId(createGardenId interface{}) gardens_models.Gardens {
-	ctx := mongo_connection.ContextForMongo()
+func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, error) {
+	start := utils.StartPerformanceTest()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
 	var result gardens_models.Gardens
-	collection.FindOne(ctx, bson.D{
+	err := collection.FindOne(ctx, bson.D{
 		primitive.E{Key: "_id", Value: createGardenId},
 	},
 	).Decode(&result)
+	
+	if err != nil {
+		log.Println("err in findOne:", err)
+	}
 
-	return result
+	utils.StopPerformanceTest(start, "Successful get gardensByGardenId (controller)")
+	return result, err
 }
 
-func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFullyPopulated {
-	garden := GetGardensByGardenId(gardenId)
+func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensFullyPopulated, error) {
+	garden, err := GetGardensByGardenId(gardenId)
+
+	var populatedGarden gardens_models.GardensFullyPopulated
+
+	if err != nil {
+		return populatedGarden, err
+	}
+
 	rules := rules_controllers.GetRulesByGardenId(gardenId)
 
 	var ruleIds []interface{}
@@ -62,7 +80,6 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 		ruleIds = append(ruleIds, rule.ID)
 	}
 
-	var populatedGarden gardens_models.GardensFullyPopulated
 	populatedGarden.Garden = garden
 
 	if len(ruleIds) == 0 {
@@ -74,14 +91,15 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) gardens_models.GardensFu
 		populatedGarden.CompletedTasks = completedTasks
 	}
 
-	return populatedGarden
+	return populatedGarden, nil
 }
 
 func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
@@ -104,10 +122,11 @@ func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
 }
 
 func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens) (*mongo.UpdateResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
@@ -125,10 +144,11 @@ func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens)
 }
 
 func DeleteGardenByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 

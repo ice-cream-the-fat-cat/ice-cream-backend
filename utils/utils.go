@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -22,4 +23,13 @@ func EnableCors(w *http.ResponseWriter) {
 	header.Set("Access-Control-Allow-Origin", "*")
 	header.Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
 	header.Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
+}
+
+func StartPerformanceTest() time.Time {
+	return time.Now()
+}
+
+func StopPerformanceTest(start time.Time, message string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", message, elapsed)
 }
