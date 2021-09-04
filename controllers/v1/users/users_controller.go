@@ -12,10 +12,11 @@ import (
 )
 
 func CreateUser(createdUserPost users_models.Users) (*mongo.InsertOneResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "users")
 
@@ -29,15 +30,17 @@ func CreateUser(createdUserPost users_models.Users) (*mongo.InsertOneResult, err
 }
 
 func GetUserByUserId(createUserId interface{}) (users_models.Users, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
+
 	collection := mongo_connection.MongoCollection(client, "users")
 
 	var result users_models.Users
 	err := collection.FindOne(ctx, bson.D{
-		primitive.E{Key: "_id", Value: createUserId},
+		primitive.E{Key: "userFireBaseId", Value: createUserId},
 	},
 	).Decode(&result)
 

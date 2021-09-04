@@ -2,7 +2,7 @@ package users_router
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
@@ -18,21 +18,30 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 	paramsUserId := vars["userFireBaseId"]
 
-	_, err := users_controllers.GetUserByUserId(paramsUserId)
+	log.Println(paramsUserId)
 
+	_, err := users_controllers.GetUserByUserId(paramsUserId)
 	if err != nil {
-		fmt.Fprintf(w, "Error no user data!")
+		log.Println(w, "Error no user data!")
 		var createdUserPost users_models.Users
 		createdUserPost.ID = primitive.NewObjectID()
 		createdUserPost.UserFireBaseId = paramsUserId
 		createdUserPost.NumCoins = 0
+		createdUserPost.FlowerCollections = []string{}
 
-		newUser, err := users_controllers.CreateUser(createdUserPost)
+		_, err := users_controllers.CreateUser(createdUserPost)
 		if err != nil {
-			fmt.Fprintf(w, "Error creating user!")
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(newUser)
+			log.Println(w, "Error creating user!")
+			return
 		}
+
 	}
+
+	userData, err := users_controllers.GetUserByUserId(paramsUserId)
+	if err != nil {
+		log.Println(w, "Error no user data!")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userData)
 }
