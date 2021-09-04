@@ -40,7 +40,7 @@ func GetUserByUserId(createUserId interface{}) (users_models.Users, error) {
 
 	var result users_models.Users
 	err := collection.FindOne(ctx, bson.D{
-		primitive.E{Key: "userFireBaseId", Value: createUserId},
+		primitive.E{Key: "fireBaseUserId", Value: createUserId},
 	},
 	).Decode(&result)
 

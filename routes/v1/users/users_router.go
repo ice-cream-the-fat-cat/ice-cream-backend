@@ -16,7 +16,7 @@ import (
 func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
-	paramsUserId := vars["userFireBaseId"]
+	paramsUserId := vars["fireBaseUserId"]
 
 	log.Println(paramsUserId)
 
@@ -25,7 +25,7 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 		log.Println(w, "Error no user data!")
 		var createdUserPost users_models.Users
 		createdUserPost.ID = primitive.NewObjectID()
-		createdUserPost.UserFireBaseId = paramsUserId
+		createdUserPost.FireBaseUserId = paramsUserId
 		createdUserPost.NumCoins = 0
 		createdUserPost.FlowerCollections = []string{}
 

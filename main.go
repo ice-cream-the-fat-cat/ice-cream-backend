@@ -42,7 +42,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/flowers", flowers_router.GetFlowers).Methods("GET")
 
 	// users
-	router.HandleFunc("/api/v1/users/{userFireBaseId}", users_router.GetUserByUserId).Methods("GET")
+	router.HandleFunc("/api/v1/users/{fireBaseUserId}", users_router.GetUserByUserId).Methods("GET")
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(":"+port, router))
