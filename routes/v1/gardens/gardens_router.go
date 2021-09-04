@@ -77,7 +77,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
-	paramsUserId := vars["userFireBaseId"]
+	paramsUserId := vars["fireBaseUserId"]
 
 	userGardens := gardens_controllers.GetGardensByUserId(paramsUserId)
 
