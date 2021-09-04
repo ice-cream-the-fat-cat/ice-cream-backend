@@ -24,7 +24,7 @@ func createServer() {
 	// gardens
 	router.HandleFunc("/api/v1/gardens", gardens_router.CreateGardens).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.GetGardenByGardenId).Methods("GET")
-	router.HandleFunc("/api/v1/gardens/userid/{userFireBaseId}", gardens_router.GetGardensByUserId).Methods("GET")
+	router.HandleFunc("/api/v1/gardens/userid/{fireBaseUserId}", gardens_router.GetGardensByUserId).Methods("GET")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.UpdateGardenById).Methods("PUT")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.DeleteGardenByGardenId).Methods("DELETE")
 
