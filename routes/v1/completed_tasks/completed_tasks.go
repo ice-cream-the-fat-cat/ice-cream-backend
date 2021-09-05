@@ -119,9 +119,6 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 						json.NewEncoder(w).Encode(updatedUser)
 					}
 				}
-
-				// w.Header().Set("Content-Type", "application/json")
-				// json.NewEncoder(w).Encode(deleteResult)
 			} else {
 				log.Println("could not find matching completedTask ID:", oid)
 				w.Header().Set("Content-Type", "application/json")
