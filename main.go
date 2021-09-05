@@ -27,7 +27,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.GetGardenByGardenId).Methods("GET")
 	router.HandleFunc("/api/v1/gardens/userid/{fireBaseUserId}", gardens_router.GetGardensByUserId).Methods("GET")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.UpdateGardenById).Methods("PUT")
-	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.DeleteGardenByGardenId).Methods("DELETE")
+	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.DeleteGardenByGardenId).Methods("DELETE", "OPTIONS")
 
 	// rules
 	router.HandleFunc("/api/v1/rules", rules_router.CreateRule).Methods("POST", "OPTIONS")
@@ -36,7 +36,7 @@ func createServer() {
 
 	// completedTasks
 	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/v1/completedTasks/{completedTaskId}", completed_tasks_router.DeleteCompletedTaskByCompletedTaskId).Methods("DELETE")
+	router.HandleFunc("/api/v1/completedTasks/{completedTaskId}/fireBaseUserId/{fireBaseUserId}", completed_tasks_router.DeleteCompletedTaskByCompletedTaskId).Methods("DELETE", "OPTIONS")
 
 	// flowers
 	router.HandleFunc("/api/v1/flowers", flowers_router.GetFlowers).Methods("GET")
