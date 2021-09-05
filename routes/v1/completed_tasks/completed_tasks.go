@@ -93,10 +93,6 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 			}
 
 			if res.DeletedCount == 1 {
-				// var deleteResult utils_models.DeleteResult
-				// deleteResult.Info = "Successfully deleted Completed Task"
-				// deleteResult.Success = true
-
 				user, err := users_controllers.GetUserByFireBaseUserId(paramsFireBaseUserId)
 
 				if err != nil {
