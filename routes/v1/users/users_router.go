@@ -20,14 +20,14 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(paramsUserId)
 
-	_, err := users_controllers.GetUserByUserId(paramsUserId)
+	_, err := users_controllers.GetUserByFireBaseUserId(paramsUserId)
 	if err != nil {
 		log.Println(w, "Error no user data!")
 		var createdUserPost users_models.Users
 		createdUserPost.ID = primitive.NewObjectID()
 		createdUserPost.FireBaseUserId = paramsUserId
 		createdUserPost.NumCoins = 0
-		createdUserPost.FlowerCollections = []string{}
+		createdUserPost.FlowerCollections = []primitive.ObjectID{}
 
 		_, err := users_controllers.CreateUser(createdUserPost)
 		if err != nil {
@@ -37,7 +37,7 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	userData, err := users_controllers.GetUserByUserId(paramsUserId)
+	userData, err := users_controllers.GetUserByFireBaseUserId(paramsUserId)
 	if err != nil {
 		log.Println(w, "Error no user data!")
 		return
