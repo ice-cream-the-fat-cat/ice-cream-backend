@@ -8,12 +8,15 @@ import (
 
 	"github.com/gorilla/mux"
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
+	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
 	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	utils_models "github.com/ice-cream-backend/models/v1/utils"
 	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+var COIN_AFTER_COMPLETED_TASK = 1
 
 func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
 	fmt.Println("Endpoint hit: create completedTasks")
@@ -28,10 +31,34 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
 		if err != nil {
 			fmt.Fprintf(w, "Error creating completedTasks!")
 		} else {
-			newCompletedTask := completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
-	
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(newCompletedTask)
+			_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
+
+			user, err := users_controllers.GetUserByFireBaseUserId(completedTasksPost.FireBaseUserId)
+
+			if err != nil {
+				log.Println("Error finding user to update coins after completing task:", err)
+				w.Header().Set("Content-Type", "application/json")
+				var iceCreamError errors_models.IceCreamErrors
+				iceCreamError.Error = err.Error()
+				iceCreamError.Info = "Error finding user to update coins after completing task"
+				json.NewEncoder(w).Encode(iceCreamError)
+			} else {
+				user.NumCoins = user.NumCoins + COIN_AFTER_COMPLETED_TASK
+
+				updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
+
+				if err != nil {
+					log.Println("Error updating user's coins after completing task:", err)
+					w.Header().Set("Content-Type", "application/json")
+					var iceCreamError errors_models.IceCreamErrors
+					iceCreamError.Error = err.Error()
+					iceCreamError.Info = "Error updating user's coins after completing task"
+					json.NewEncoder(w).Encode(iceCreamError)
+				} else {
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(updatedUser)
+				}
+			}
 		}
 	}
 }
