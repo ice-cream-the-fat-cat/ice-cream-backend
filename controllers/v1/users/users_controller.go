@@ -21,6 +21,9 @@ func CreateUser(createdUserPost users_models.Users) (*mongo.InsertOneResult, err
 
 	collection := mongo_connection.MongoCollection(client, "users")
 
+	createdUserPost.CreatedDate = time.Now()
+	createdUserPost.LastUpdate = time.Now()
+
 	res, insertErr := collection.InsertOne(ctx, createdUserPost)
 
 	if insertErr != nil {
