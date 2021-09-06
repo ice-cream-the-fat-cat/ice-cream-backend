@@ -22,7 +22,7 @@ func BuyNewFlower(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var iceCreamError errors_models.IceCreamErrors
 		iceCreamError.Error = err.Error()
-		iceCreamError.Info = "Invalid gardenId provided"
+		iceCreamError.Info = "Invalid flowersStore request provided"
 		json.NewEncoder(w).Encode(iceCreamError)
 	} else {
 		userData, err := users_controllers.GetUserByUserId(flowersStore.FireBaseUserId)
