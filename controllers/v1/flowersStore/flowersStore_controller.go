@@ -1,8 +1,6 @@
 package flowersStore_controllers
 
 import (
-	"log"
-
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
 	mongo_connection "github.com/ice-cream-backend/database"
 	flowersStore_models "github.com/ice-cream-backend/models/v1/flowersStore"
@@ -22,13 +20,13 @@ func BuyNewFlower(flowersStore flowersStore_models.FlowersStore) (*mongo.UpdateR
 
 	// TODO : should error check
 	userData, _ := users_controllers.GetUserByUserId(flowersStore.FireBaseUserId)
+
 	updatedUser := bson.M{
 		"$set": bson.M{
 			"numCoins":          userData.NumCoins - flowersStore.Price,
 			"flowerCollections": append(userData.FlowerCollections, flowersStore.FlowerID),
 		},
 	}
-	log.Println(updatedUser)
 	result, updateErr := collection.UpdateByID(ctx, userData.ID, updatedUser)
 
 	return result, updateErr
