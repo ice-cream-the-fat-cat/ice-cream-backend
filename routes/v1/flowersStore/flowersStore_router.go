@@ -25,7 +25,7 @@ func BuyNewFlower(w http.ResponseWriter, r *http.Request) {
 		iceCreamError.Info = "Invalid flowersStore request provided"
 		json.NewEncoder(w).Encode(iceCreamError)
 	} else {
-		userData, err := users_controllers.GetUserByUserId(flowersStore.FireBaseUserId)
+		userData, err := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
 		if err != nil {
 			log.Println(w, "Error no user data!")
 			return
