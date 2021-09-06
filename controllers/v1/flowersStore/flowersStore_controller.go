@@ -18,7 +18,6 @@ func BuyNewFlower(flowersStore flowersStore_models.FlowersStore) (*mongo.UpdateR
 
 	collection := mongo_connection.MongoCollection(client, "users")
 
-	// TODO : should error check
 	userData, _ := users_controllers.GetUserByUserId(flowersStore.FireBaseUserId)
 
 	updatedUser := bson.M{
