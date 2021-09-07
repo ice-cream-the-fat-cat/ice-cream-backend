@@ -64,7 +64,7 @@ func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, e
 	return result, err
 }
 
-func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensFullyPopulated, error) {
+func GetPopulatedGardenByGardenId(gardenId interface{}, date string) (gardens_models.GardensFullyPopulated, error) {
 	garden, err := GetGardensByGardenId(gardenId)
 
 	var populatedGarden gardens_models.GardensFullyPopulated
@@ -87,7 +87,7 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensF
 		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
 	} else{
 		populatedGarden.Rules = rules
-		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIds(ruleIds)
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, date)
 		populatedGarden.CompletedTasks = completedTasks
 	}
 
