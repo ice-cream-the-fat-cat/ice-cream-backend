@@ -26,7 +26,7 @@ func BuyNewFlower(flowersStore flowersStore_models.FlowersStore) (*mongo.UpdateR
 
 	oid, _ := primitive.ObjectIDFromHex(flowersStore.FlowerID)
 
-	newBalance := userData.NumCoins - flowersStore.Price
+	newBalance := userData.Balance - flowersStore.Price
 
 	if newBalance < 0 {
 		updatedUser := bson.M{}
@@ -37,7 +37,7 @@ func BuyNewFlower(flowersStore flowersStore_models.FlowersStore) (*mongo.UpdateR
 	} else {
 		updatedUser := bson.M{
 			"$set": bson.M{
-				"numCoins":          newBalance,
+				"balance":           newBalance,
 				"flowerCollections": append(userData.FlowerCollections, oid),
 				"lastUpdate":        time.Now(),
 			},
