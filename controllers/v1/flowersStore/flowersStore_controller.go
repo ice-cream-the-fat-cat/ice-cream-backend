@@ -1,6 +1,7 @@
 package flowersStore_controllers
 
 import (
+	"fmt"
 	"time"
 
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
@@ -25,14 +26,23 @@ func BuyNewFlower(flowersStore flowersStore_models.FlowersStore) (*mongo.UpdateR
 
 	oid, _ := primitive.ObjectIDFromHex(flowersStore.FlowerID)
 
-	updatedUser := bson.M{
-		"$set": bson.M{
-			"numCoins":          userData.NumCoins - flowersStore.Price,
-			"flowerCollections": append(userData.FlowerCollections, oid),
-			"lastUpdate":        time.Now(),
-		},
-	}
-	result, updateErr := collection.UpdateByID(ctx, userData.ID, updatedUser)
+	newBalance := userData.NumCoins - flowersStore.Price
 
-	return result, updateErr
+	if newBalance < 0 {
+		updatedUser := bson.M{}
+		result, _ := collection.UpdateByID(ctx, userData.ID, updatedUser)
+
+		errStr := fmt.Errorf("Error insufficient balance: %v", newBalance)
+		return result, errStr
+	} else {
+		updatedUser := bson.M{
+			"$set": bson.M{
+				"numCoins":          newBalance,
+				"flowerCollections": append(userData.FlowerCollections, oid),
+				"lastUpdate":        time.Now(),
+			},
+		}
+		result, updateErr := collection.UpdateByID(ctx, userData.ID, updatedUser)
+		return result, updateErr
+	}
 }
