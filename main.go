@@ -10,6 +10,7 @@ import (
 	completed_tasks_router "github.com/ice-cream-backend/routes/v1/completed_tasks"
 	flowers_router "github.com/ice-cream-backend/routes/v1/flowers"
 	garden_categories_router "github.com/ice-cream-backend/routes/v1/garden_categories"
+	flowersStore_router "github.com/ice-cream-backend/routes/v1/flowersStore"
 	gardens_router "github.com/ice-cream-backend/routes/v1/gardens"
 	rules_router "github.com/ice-cream-backend/routes/v1/rules"
 	users_router "github.com/ice-cream-backend/routes/v1/users"
@@ -47,6 +48,9 @@ func createServer() {
 
 	// users
 	router.HandleFunc("/api/v1/users/{fireBaseUserId}", users_router.GetUserByUserId).Methods("GET")
+
+	// flowersStore
+	router.HandleFunc("/api/v1/flowersStore", flowersStore_router.BuyNewFlower).Methods("PUT")
 
 	port := os.Getenv("PORT")
 	log.Println("starting http server on port:", port)
