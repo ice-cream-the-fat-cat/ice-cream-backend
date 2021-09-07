@@ -5,6 +5,7 @@ import (
 
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
 	rules_models "github.com/ice-cream-backend/models/v1/rules"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Gardens struct {
@@ -12,6 +13,7 @@ type Gardens struct {
 	Name           string `bson:"name" json:"name"`
 	Description    string `bson:"description" json:"description"`
 	FireBaseUserId string `bson:"fireBaseUserId" json:"fireBaseUserId"`
+	GardenCategoryId primitive.ObjectID `bson:"gardenCategoryId" json:"gardenCategoryId"`
 	CreatedDate time.Time `bson:"createdDate" json:"createdDate"`
 	LastUpdate time.Time `bson:"lastUpdate" json:"lastUpdate"`
 }

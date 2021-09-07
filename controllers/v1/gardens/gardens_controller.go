@@ -134,6 +134,7 @@ func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens)
 		"$set": bson.M{
 			"name": garden.Name,
 			"description": garden.Description,
+			"gardenCategoryId": garden.GardenCategoryId,
 			"lastUpdate": time.Now(),
 		},
 	}

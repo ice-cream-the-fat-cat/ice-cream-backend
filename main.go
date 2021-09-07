@@ -9,6 +9,7 @@ import (
 	"github.com/ice-cream-backend/routes/v1"
 	completed_tasks_router "github.com/ice-cream-backend/routes/v1/completed_tasks"
 	flowers_router "github.com/ice-cream-backend/routes/v1/flowers"
+	garden_categories_router "github.com/ice-cream-backend/routes/v1/garden_categories"
 	flowersStore_router "github.com/ice-cream-backend/routes/v1/flowersStore"
 	gardens_router "github.com/ice-cream-backend/routes/v1/gardens"
 	rules_router "github.com/ice-cream-backend/routes/v1/rules"
@@ -29,6 +30,9 @@ func createServer() {
 	router.HandleFunc("/api/v1/gardens/userid/{fireBaseUserId}", gardens_router.GetGardensByUserId).Methods("GET")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.UpdateGardenById).Methods("PUT")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.DeleteGardenByGardenId).Methods("DELETE", "OPTIONS")
+
+	// gardenCategories
+	router.HandleFunc("/api/v1/gardenCategories", garden_categories_router.GetGardenCategories).Methods("GET")
 
 	// rules
 	router.HandleFunc("/api/v1/rules", rules_router.CreateRule).Methods("POST", "OPTIONS")
