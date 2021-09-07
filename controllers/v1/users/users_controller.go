@@ -66,9 +66,9 @@ func UpdateUserByUserId(userId interface{}, user users_models.Users) (*mongo.Upd
 
 	updatedUser := bson.M{
 		"$set": bson.M{
-			"numCoins": user.NumCoins,
+			"balance":           user.Balance,
 			"flowerCollections": user.FlowerCollections,
-			"lastUpdate": time.Now(),
+			"lastUpdate":        time.Now(),
 		},
 	}
 
