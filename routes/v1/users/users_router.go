@@ -26,7 +26,7 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 		var createdUserPost users_models.Users
 		createdUserPost.ID = primitive.NewObjectID()
 		createdUserPost.FireBaseUserId = paramsUserId
-		createdUserPost.NumCoins = 0
+		createdUserPost.Balance = 0
 		createdUserPost.FlowerCollections = []primitive.ObjectID{}
 
 		_, err := users_controllers.CreateUser(createdUserPost)

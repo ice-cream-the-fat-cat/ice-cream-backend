@@ -17,16 +17,16 @@ import (
 
 var COIN_AFTER_COMPLETED_TASK = 1
 
-func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
+func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: create completedTasks")
 	utils.EnableCors(&w)
 
 	if r.Method == "POST" {
 		var completedTasksPost completed_tasks_models.CompletedTasks
 		_ = json.NewDecoder(r.Body).Decode(&completedTasksPost)
-	
+
 		res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
-	
+
 		if err != nil {
 			fmt.Fprintf(w, "Error creating completedTasks!")
 			var iceCreamError errors_models.IceCreamErrors
@@ -46,7 +46,7 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
 				iceCreamError.Info = "Error finding user to update coins after completing task"
 				json.NewEncoder(w).Encode(iceCreamError)
 			} else {
-				user.NumCoins = user.NumCoins + COIN_AFTER_COMPLETED_TASK
+				user.Balance = user.Balance + COIN_AFTER_COMPLETED_TASK
 
 				updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
 
@@ -107,7 +107,7 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 					iceCreamError.Info = "Error finding user to update coins after deleting completed task"
 					json.NewEncoder(w).Encode(iceCreamError)
 				} else {
-					user.NumCoins = user.NumCoins - COIN_AFTER_COMPLETED_TASK
+					user.Balance = user.Balance - COIN_AFTER_COMPLETED_TASK
 
 					updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
 
