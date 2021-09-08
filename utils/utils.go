@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	"github.com/joho/godotenv"
 )
 
@@ -43,4 +45,13 @@ func ConvertAPIStringToDate(date string) time.Time {
 	day, _ := strconv.Atoi(splitDate[2])
 
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+}
+
+func SendErrorBack(w http.ResponseWriter, err error, info string) {
+	log.Println(info + ":", err)
+	w.Header().Set("Content-Type", "application/json")
+	var iceCreamError errors_models.IceCreamErrors
+	iceCreamError.Error = err.Error()
+	iceCreamError.Info = info
+	json.NewEncoder(w).Encode(iceCreamError)
 }
