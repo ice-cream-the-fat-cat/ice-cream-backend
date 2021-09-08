@@ -29,6 +29,10 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			fmt.Fprintf(w, "Error creating completedTasks!")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Error Error creating completedTasks!"
+			json.NewEncoder(w).Encode(iceCreamError)
 		} else {
 			_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 

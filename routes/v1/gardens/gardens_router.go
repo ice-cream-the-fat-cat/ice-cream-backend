@@ -51,6 +51,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 
 	paramsGardenId := vars["gardenId"]
+	paramsDate := vars["date"]
 
 	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
@@ -59,7 +60,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("Invalid gardenId provided")
 	} else {
-		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenId(oid)
+		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenId(oid, paramsDate)
 
 		if err != nil {
 			var iceCreamError errors_models.IceCreamErrors
