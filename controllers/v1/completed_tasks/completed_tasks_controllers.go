@@ -3,8 +3,6 @@ package completed_tasks_controllers
 import (
 	"context"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	mongo_connection "github.com/ice-cream-backend/database"
@@ -82,7 +80,7 @@ func GetCompletedTasksByRuleIds(ruleIds []interface{}) []completed_tasks_models.
 	return results
 }
 
-func GetCompletedTasksByRuleIdWithDate(ruleIds []interface{}, date string) []completed_tasks_models.CompletedTasks {
+func GetCompletedTasksByRuleIdWithDate(ruleIds []interface{}, date time.Time) []completed_tasks_models.CompletedTasks {
 	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -91,15 +89,10 @@ func GetCompletedTasksByRuleIdWithDate(ruleIds []interface{}, date string) []com
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
-	splitDate := strings.Split(date, "-")
-	year, _ := strconv.Atoi(splitDate[0])
-	month, _ := strconv.Atoi(splitDate[1])
-	day, _ := strconv.Atoi(splitDate[2])
-
 	var results []completed_tasks_models.CompletedTasks
 	query := bson.M{
 		"ruleId": bson.M{"$in": ruleIds},
-		"date": time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC),
+		"date": date,
 	}
 	opts := options.Find().SetSort(bson.D{
 		primitive.E{Key:"date", Value: 1},
