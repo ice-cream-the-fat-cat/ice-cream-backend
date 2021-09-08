@@ -90,6 +90,35 @@ func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(userGardens)
 }
 
+func GetGardenByGardenIdWithStartAndEndDate(w http.ResponseWriter, r *http.Request) {
+	start := utils.StartPerformanceTest()
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+
+	paramsGardenId := vars["gardenId"]
+	paramsStartDate := vars["startDate"]
+	paramsEndDate := vars["endDate"]
+
+	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
+
+	if err != nil {
+
+	} else {
+		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenIdWithStartAndEndDate(oid, paramsStartDate, paramsEndDate)
+
+		if err != nil {
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Invalid gardenId provided for start / end date getGarden"
+			json.NewEncoder(w).Encode(iceCreamError)
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(populatedGarden)
+			utils.StopPerformanceTest(start, fmt.Sprintf("Successfully got fully populated garden (start / end date) for gardenId %s ", paramsGardenId))
+		}
+	}
+}
+
 func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: update garden by id")
 	vars := mux.Vars(r)

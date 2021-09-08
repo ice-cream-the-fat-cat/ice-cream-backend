@@ -111,6 +111,37 @@ func GetCompletedTasksByRuleIdWithDate(ruleIds []interface{}, date time.Time) []
 	return results
 }
 
+func GetCompletedTasksByRuleIdWithStartAndEndDate(ruleIds []interface{}, startDate time.Time, endDate time.Time) []completed_tasks_models.CompletedTasks {
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+	defer ctxCancel()
+
+	collection := mongo_connection.MongoCollection(client, "completedTasks")
+
+	var results []completed_tasks_models.CompletedTasks
+	query := bson.M{
+		"ruleId": bson.M{"$in": ruleIds},
+		"date": bson.M{"$gte": startDate , "$lte": endDate},
+	}
+	opts := options.Find().SetSort(bson.D{
+		primitive.E{Key:"date", Value: 1},
+	})
+	cursor, err := collection.Find(ctx, query, opts)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
+}
+
 func DeleteCompletedTaskByCompletedTaskId(completedTaskId interface{}) (*mongo.DeleteResult, error) {
 	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
