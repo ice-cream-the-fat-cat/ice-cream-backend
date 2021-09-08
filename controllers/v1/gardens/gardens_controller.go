@@ -64,7 +64,7 @@ func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, e
 	return result, err
 }
 
-func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensFullyPopulated, error) {
+func GetPopulatedGardenByGardenId(gardenId interface{}, date string) (gardens_models.GardensFullyPopulated, error) {
 	garden, err := GetGardensByGardenId(gardenId)
 
 	var populatedGarden gardens_models.GardensFullyPopulated
@@ -87,7 +87,10 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensF
 		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
 	} else{
 		populatedGarden.Rules = rules
-		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIds(ruleIds)
+
+		goDate := utils.ConvertAPIStringToDate(date)
+
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, goDate)
 		populatedGarden.CompletedTasks = completedTasks
 	}
 
@@ -134,6 +137,7 @@ func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens)
 		"$set": bson.M{
 			"name": garden.Name,
 			"description": garden.Description,
+			"gardenCategoryId": garden.GardenCategoryId,
 			"lastUpdate": time.Now(),
 		},
 	}

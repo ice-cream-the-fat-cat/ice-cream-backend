@@ -17,45 +17,61 @@ import (
 
 var COIN_AFTER_COMPLETED_TASK = 1
 
-func CreateCompletedTasks(w http.ResponseWriter, r *http.Request)  {
+func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: create completedTasks")
 	utils.EnableCors(&w)
 
 	if r.Method == "POST" {
 		var completedTasksPost completed_tasks_models.CompletedTasks
 		_ = json.NewDecoder(r.Body).Decode(&completedTasksPost)
-	
-		res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
-	
-		if err != nil {
-			fmt.Fprintf(w, "Error creating completedTasks!")
-		} else {
-			_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 
-			user, err := users_controllers.GetUserByFireBaseUserId(completedTasksPost.FireBaseUserId)
+		ruleIds := []interface{}{completedTasksPost.RuleId}
+		checkExistingCompletedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, completedTasksPost.Date)
+
+		if len(checkExistingCompletedTasks) > 0 {
+			log.Println("Already has existing completedTask for this rule and date!")
+			w.Header().Set("Content-Type", "application/json")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = fmt.Errorf("already has existing completedTask for this rule: %q and date: %q", completedTasksPost.RuleId.String(), completedTasksPost.Date).Error()
+			iceCreamError.Info = "Already has existing completedTask for this rule and date!"
+			json.NewEncoder(w).Encode(iceCreamError)
+		} else {
+			res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
 
 			if err != nil {
-				log.Println("Error finding user to update coins after completing task:", err)
-				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprintf(w, "Error creating completedTasks!")
 				var iceCreamError errors_models.IceCreamErrors
 				iceCreamError.Error = err.Error()
-				iceCreamError.Info = "Error finding user to update coins after completing task"
+				iceCreamError.Info = "Error Error creating completedTasks!"
 				json.NewEncoder(w).Encode(iceCreamError)
 			} else {
-				user.NumCoins = user.NumCoins + COIN_AFTER_COMPLETED_TASK
+				_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 
-				updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
+				user, err := users_controllers.GetUserByFireBaseUserId(completedTasksPost.FireBaseUserId)
 
 				if err != nil {
-					log.Println("Error updating user's coins after completing task:", err)
+					log.Println("Error finding user to update coins after completing task:", err)
 					w.Header().Set("Content-Type", "application/json")
 					var iceCreamError errors_models.IceCreamErrors
 					iceCreamError.Error = err.Error()
-					iceCreamError.Info = "Error updating user's coins after completing task"
+					iceCreamError.Info = "Error finding user to update coins after completing task"
 					json.NewEncoder(w).Encode(iceCreamError)
 				} else {
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(updatedUser)
+					user.Balance = user.Balance + COIN_AFTER_COMPLETED_TASK
+
+					updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
+
+					if err != nil {
+						log.Println("Error updating user's coins after completing task:", err)
+						w.Header().Set("Content-Type", "application/json")
+						var iceCreamError errors_models.IceCreamErrors
+						iceCreamError.Error = err.Error()
+						iceCreamError.Info = "Error updating user's coins after completing task"
+						json.NewEncoder(w).Encode(iceCreamError)
+					} else {
+						w.Header().Set("Content-Type", "application/json")
+						json.NewEncoder(w).Encode(updatedUser)
+					}
 				}
 			}
 		}
@@ -103,7 +119,7 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 					iceCreamError.Info = "Error finding user to update coins after deleting completed task"
 					json.NewEncoder(w).Encode(iceCreamError)
 				} else {
-					user.NumCoins = user.NumCoins - COIN_AFTER_COMPLETED_TASK
+					user.Balance = user.Balance - COIN_AFTER_COMPLETED_TASK
 
 					updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
 
