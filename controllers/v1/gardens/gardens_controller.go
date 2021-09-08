@@ -87,7 +87,10 @@ func GetPopulatedGardenByGardenId(gardenId interface{}, date string) (gardens_mo
 		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
 	} else{
 		populatedGarden.Rules = rules
-		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, date)
+
+		goDate := utils.ConvertAPIStringToDate(date)
+
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, goDate)
 		populatedGarden.CompletedTasks = completedTasks
 	}
 

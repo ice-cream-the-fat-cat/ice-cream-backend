@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -32,4 +34,13 @@ func StartPerformanceTest() time.Time {
 func StopPerformanceTest(start time.Time, message string) {
 	elapsed := time.Since(start)
 	log.Printf("%s took %s", message, elapsed)
+}
+
+func ConvertAPIStringToDate(date string) time.Time {
+	splitDate := strings.Split(date, "-")
+	year, _ := strconv.Atoi(splitDate[0])
+	month, _ := strconv.Atoi(splitDate[1])
+	day, _ := strconv.Atoi(splitDate[2])
+
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
