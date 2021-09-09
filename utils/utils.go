@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func LoadEnv()  {
+func LoadEnv() {
 	err := godotenv.Load(".env")
 
 	if err != nil && os.Getenv("GO_ENV") != "production" {
@@ -23,7 +23,7 @@ func EnableCors(w *http.ResponseWriter) {
 	header := (*w).Header()
 	// TODO: Limit access to just frontend domains
 	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+	header.Set("Access-Control-Allow-Methods", "DELETE, POST, PUT, GET, OPTIONS")
 	header.Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
 
