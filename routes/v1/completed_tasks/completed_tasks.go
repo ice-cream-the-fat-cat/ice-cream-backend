@@ -3,14 +3,12 @@ package completed_tasks_router
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
-	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -29,48 +27,41 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 		checkExistingCompletedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, completedTasksPost.Date)
 
 		if len(checkExistingCompletedTasks) > 0 {
-			log.Println("Already has existing completedTask for this rule and date!")
-			w.Header().Set("Content-Type", "application/json")
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = fmt.Errorf("already has existing completedTask for this rule: %q and date: %q", completedTasksPost.RuleId.String(), completedTasksPost.Date).Error()
-			iceCreamError.Info = "Already has existing completedTask for this rule and date!"
-			json.NewEncoder(w).Encode(iceCreamError)
+			err := fmt.Errorf("already has existing completedTask for this rule: %q and date: %q", completedTasksPost.RuleId.String(), completedTasksPost.Date)
+			utils.SendErrorBack(w, err, "Already has existing completedTask for this rule and date!")
 		} else {
 			res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
 
 			if err != nil {
-				fmt.Fprintf(w, "Error creating completedTasks!")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = err.Error()
-				iceCreamError.Info = "Error Error creating completedTasks!"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, err, "Error Error creating completedTasks!")
 			} else {
 				_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 
 				user, err := users_controllers.GetUserByFireBaseUserId(completedTasksPost.FireBaseUserId)
 
 				if err != nil {
-					log.Println("Error finding user to update coins after completing task:", err)
-					w.Header().Set("Content-Type", "application/json")
-					var iceCreamError errors_models.IceCreamErrors
-					iceCreamError.Error = err.Error()
-					iceCreamError.Info = "Error finding user to update coins after completing task"
-					json.NewEncoder(w).Encode(iceCreamError)
+					utils.SendErrorBack(w, err, "Error finding user to update coins after completing task")
 				} else {
 					user.Balance = user.Balance + COIN_AFTER_COMPLETED_TASK
 
 					updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
 
 					if err != nil {
-						log.Println("Error updating user's coins after completing task:", err)
-						w.Header().Set("Content-Type", "application/json")
-						var iceCreamError errors_models.IceCreamErrors
-						iceCreamError.Error = err.Error()
-						iceCreamError.Info = "Error updating user's coins after completing task"
-						json.NewEncoder(w).Encode(iceCreamError)
+						utils.SendErrorBack(w, err, "Error updating user's coins after completing task")
 					} else {
-						w.Header().Set("Content-Type", "application/json")
-						json.NewEncoder(w).Encode(updatedUser)
+						if updatedUser.MatchedCount != 0 {
+							userData, err := users_controllers.GetUserByFireBaseUserId(user.FireBaseUserId)
+
+							if err != nil {
+								utils.SendErrorBack(w, err, "Error getting updated user data")
+							} else {
+								w.Header().Set("Content-Type", "application/json")
+								json.NewEncoder(w).Encode(userData)
+							}
+						} else {
+							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
+							utils.SendErrorBack(w, err, "Error updating user's balance")
+						}
 					}
 				}
 			}
@@ -90,58 +81,45 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 		oid, err := primitive.ObjectIDFromHex(paramsCompletedTaskId)
 
 		if err != nil {
-			log.Println("Error converting params completedTaskId to ObjectId:", err)
-			w.Header().Set("Content-Type", "application/json")
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid completedTaskId provided"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Invalid completedTaskId provided")
 		} else {
 			res, err := completed_tasks_controllers.DeleteCompletedTaskByCompletedTaskId(oid)
 
 			if err != nil {
-				log.Println("Error deleting completedTask:", err)
-				w.Header().Set("Content-Type", "application/json")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = err.Error()
-				iceCreamError.Info = "Error deleting completedTask"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, err, "Error deleting completedTask")
 			}
 
 			if res.DeletedCount == 1 {
 				user, err := users_controllers.GetUserByFireBaseUserId(paramsFireBaseUserId)
 
 				if err != nil {
-					log.Println("Error finding user to update coins after deleting completed task:", err)
-					w.Header().Set("Content-Type", "application/json")
-					var iceCreamError errors_models.IceCreamErrors
-					iceCreamError.Error = err.Error()
-					iceCreamError.Info = "Error finding user to update coins after deleting completed task"
-					json.NewEncoder(w).Encode(iceCreamError)
+					utils.SendErrorBack(w, err, "Error finding user to update coins after deleting completed task")
 				} else {
 					user.Balance = user.Balance - COIN_AFTER_COMPLETED_TASK
 
 					updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
 
 					if err != nil {
-						log.Println("Error updating user's coins after completing task:", err)
-						w.Header().Set("Content-Type", "application/json")
-						var iceCreamError errors_models.IceCreamErrors
-						iceCreamError.Error = err.Error()
-						iceCreamError.Info = "Error updating user's coins after completing task"
-						json.NewEncoder(w).Encode(iceCreamError)
+						utils.SendErrorBack(w, err, "Error updating user's coins after deleting completed task")
 					} else {
-						w.Header().Set("Content-Type", "application/json")
-						json.NewEncoder(w).Encode(updatedUser)
+						if updatedUser.MatchedCount != 0 {
+							userData, err := users_controllers.GetUserByFireBaseUserId(user.FireBaseUserId)
+
+							if err != nil {
+								utils.SendErrorBack(w, err, "Error getting updated user data after deleting completedTask")
+							} else {
+								w.Header().Set("Content-Type", "application/json")
+								json.NewEncoder(w).Encode(userData)
+							}
+						} else {
+							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
+							utils.SendErrorBack(w, err, "Error updating user's balance")
+						}
 					}
 				}
 			} else {
-				log.Println("could not find matching completedTask ID:", oid)
-				w.Header().Set("Content-Type", "application/json")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = fmt.Sprintf("could not find matching completedTask ID: %s", oid)
-				iceCreamError.Info = "Error deleting rule: no matching oid"
-				json.NewEncoder(w).Encode(iceCreamError)
+				err := fmt.Errorf("could not find matching completedTask ID: %s", oid)
+				utils.SendErrorBack(w, err, "Error deleting rule: no matching oid")
 			}
 		}
 	}
