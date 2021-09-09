@@ -97,6 +97,40 @@ func GetPopulatedGardenByGardenId(gardenId interface{}, date string) (gardens_mo
 	return populatedGarden, nil
 }
 
+func GetPopulatedGardenByGardenIdWithStartAndEndDate(gardenId interface{}, startDate string, endDate string) (gardens_models.GardensFullyPopulated, error) {
+	garden, err := GetGardensByGardenId(gardenId)
+
+	var populatedGarden gardens_models.GardensFullyPopulated
+
+	if err != nil {
+		return populatedGarden, err
+	}
+
+	rules := rules_controllers.GetRulesByGardenId(gardenId)
+
+	var ruleIds []interface{}
+	for _, rule := range rules {
+		ruleIds = append(ruleIds, rule.ID)
+	}
+
+	populatedGarden.Garden = garden
+
+	if len(ruleIds) == 0 {
+		populatedGarden.Rules = []rules_models.Rules{}
+		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
+	} else{
+		populatedGarden.Rules = rules
+
+		goStartDate := utils.ConvertAPIStringToDate(startDate)
+		goEndDate := utils.ConvertAPIStringToDate(endDate)
+
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithStartAndEndDate(ruleIds, goStartDate, goEndDate)
+		populatedGarden.CompletedTasks = completedTasks
+	}
+
+	return populatedGarden, nil
+}
+
 func GetGardensByUserId(fireBaseUserId interface{}) []gardens_models.Gardens {
 	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
