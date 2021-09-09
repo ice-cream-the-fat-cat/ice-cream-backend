@@ -14,23 +14,25 @@ import (
 
 func BuyNewFlower(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
+	log.Println("Request came into buy new flower endpoint", r.Method)
+	if r.Method == "PUT" {
+		var flowersStore flowersStore_models.FlowersStore
+		_ = json.NewDecoder(r.Body).Decode(&flowersStore)
 
-	var flowersStore flowersStore_models.FlowersStore
-	_ = json.NewDecoder(r.Body).Decode(&flowersStore)
-
-	_, err := flowersStore_controllers.BuyNewFlower(flowersStore)
-	if err != nil {
-		var iceCreamError errors_models.IceCreamErrors
-		iceCreamError.Error = err.Error()
-		iceCreamError.Info = "Invalid flowersStore request provided"
-		json.NewEncoder(w).Encode(iceCreamError)
-	} else {
-		userData, err := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
+		_, err := flowersStore_controllers.BuyNewFlower(flowersStore)
 		if err != nil {
-			log.Println(w, "Error no user data!")
-			return
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Invalid flowersStore request provided"
+			json.NewEncoder(w).Encode(iceCreamError)
+		} else {
+			userData, err := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
+			if err != nil {
+				log.Println(w, "Error no user data!")
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(userData)
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(userData)
 	}
 }
