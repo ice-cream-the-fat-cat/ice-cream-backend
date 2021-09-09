@@ -63,10 +63,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenId(oid, paramsDate)
 
 		if err != nil {
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid gardenId provided"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Error populating garden by garden id")
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(populatedGarden)

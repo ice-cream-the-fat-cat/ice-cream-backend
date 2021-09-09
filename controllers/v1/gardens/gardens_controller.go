@@ -166,7 +166,24 @@ func GetGardensByUserId(fireBaseUserId interface{}) []gardens_models.Gardens {
 		log.Println(cursorErr)
 	}
 
-	return results
+	gardenCategories, gardenCategoryErr := garden_categories_controllers.GetGardenCategories()
+
+	if gardenCategoryErr != nil {
+		log.Println("Error getting garden categories to populate Gardens by fireBaseUserId")
+	}
+
+	var populatedGardens []gardens_models.Gardens
+	for _, garden := range results {
+		for _, gardenCategory := range gardenCategories {
+			if gardenCategory.ID == garden.GardenCategoryId {
+				garden.GardenCategory = gardenCategory
+				break
+			}
+		}
+		populatedGardens = append(populatedGardens, garden)
+	}
+
+	return populatedGardens
 }
 
 func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens) (*mongo.UpdateResult, error) {
