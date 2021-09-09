@@ -29,7 +29,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/gardens/{gardenId}/date/{date}", gardens_router.GetGardenByGardenId).Methods("GET")
 	router.HandleFunc("/api/v1/gardens/userid/{fireBaseUserId}", gardens_router.GetGardensByUserId).Methods("GET")
 	router.HandleFunc("/api/v1/gardens/{gardenId}/startDate/{startDate}/endDate/{endDate}", gardens_router.GetGardenByGardenIdWithStartAndEndDate).Methods("GET")
-	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.UpdateGardenById).Methods("PUT")
+	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.UpdateGardenById).Methods("PUT", "OPTIONS")
 	router.HandleFunc("/api/v1/gardens/{gardenId}", gardens_router.DeleteGardenByGardenId).Methods("DELETE", "OPTIONS")
 
 	// gardenCategories
@@ -38,7 +38,7 @@ func createServer() {
 	// rules
 	router.HandleFunc("/api/v1/rules", rules_router.CreateRule).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/v1/rules/bulk", rules_router.CreateRules).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/v1/rules/{ruleId}", rules_router.UpdateRuleByRuleId).Methods("PUT")
+	router.HandleFunc("/api/v1/rules/{ruleId}", rules_router.UpdateRuleByRuleId).Methods("PUT", "OPTIONS")
 
 	// completedTasks
 	router.HandleFunc("/api/v1/completedTasks", completed_tasks_router.CreateCompletedTasks).Methods("POST", "OPTIONS")
@@ -51,7 +51,7 @@ func createServer() {
 	router.HandleFunc("/api/v1/users/{fireBaseUserId}", users_router.GetUserByUserId).Methods("GET")
 
 	// flowersStore
-	router.HandleFunc("/api/v1/flowersStore", flowersStore_router.BuyNewFlower).Methods("PUT")
+	router.HandleFunc("/api/v1/flowersStore", flowersStore_router.BuyNewFlower).Methods("PUT", "OPTIONS")
 
 	port := os.Getenv("PORT")
 	log.Println("starting http server on port:", port)
