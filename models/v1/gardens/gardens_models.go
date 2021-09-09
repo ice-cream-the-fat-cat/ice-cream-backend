@@ -10,7 +10,7 @@ import (
 )
 
 type Gardens struct {
-	ID             string `bson:"_id,omitempty" json:"_id"`
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 	Name           string `bson:"name" json:"name"`
 	Description    string `bson:"description" json:"description"`
 	FireBaseUserId string `bson:"fireBaseUserId" json:"fireBaseUserId"`
@@ -21,7 +21,7 @@ type Gardens struct {
 }
 
 type GardenForMongo struct {
-	ID             string `bson:"_id,omitempty" json:"_id"`
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 	Name           string `bson:"name" json:"name"`
 	Description    string `bson:"description" json:"description"`
 	FireBaseUserId string `bson:"fireBaseUserId" json:"fireBaseUserId"`
