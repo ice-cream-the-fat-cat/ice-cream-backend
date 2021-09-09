@@ -6,6 +6,7 @@ import (
 	"time"
 
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
+	garden_categories_controllers "github.com/ice-cream-backend/controllers/v1/garden_categories"
 	rules_controllers "github.com/ice-cream-backend/controllers/v1/rules"
 	mongo_connection "github.com/ice-cream-backend/database"
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
@@ -17,7 +18,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneResult, error) {
+func CreateGardens(createdGardensPost gardens_models.GardenForMongo) (*mongo.InsertOneResult, error) {
 	start := utils.StartPerformanceTest()
 	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
@@ -58,10 +59,20 @@ func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, e
 	
 	if err != nil {
 		log.Println("err in findOne:", err)
-	}
+		utils.StopPerformanceTest(start, "Unsuccessful getting gardensByGardenId (controller)")
+		return result, err
+	} else {
+		gardenCategory, gardenCategoryErr := garden_categories_controllers.GetGardenCategoryByGardenCategoryId(result.GardenCategoryId)
 
-	utils.StopPerformanceTest(start, "Successful get gardensByGardenId (controller)")
-	return result, err
+		if gardenCategoryErr != nil {
+			log.Println("Error getting gardenCategory for garden:", gardenCategoryErr)
+		}
+
+		result.GardenCategory = gardenCategory
+
+		utils.StopPerformanceTest(start, "Successful get gardensByGardenId (controller)")
+		return result, gardenCategoryErr
+	}
 }
 
 func GetPopulatedGardenByGardenId(gardenId interface{}, date string) (gardens_models.GardensFullyPopulated, error) {

@@ -21,10 +21,10 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		start := utils.StartPerformanceTest()
 
-		var createdGardensPost gardens_models.Gardens
-		_ = json.NewDecoder(r.Body).Decode(&createdGardensPost)
+		var newGarden gardens_models.GardenForMongo
+		_ = json.NewDecoder(r.Body).Decode(&newGarden)
 
-		res, err := gardens_controllers.CreateGardens(createdGardensPost)
+		res, err := gardens_controllers.CreateGardens(newGarden)
 
 		if err != nil {
 			fmt.Fprintf(w, "Error creating garden!")
