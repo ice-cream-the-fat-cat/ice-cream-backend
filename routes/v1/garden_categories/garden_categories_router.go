@@ -1,7 +1,6 @@
 package garden_categories_router
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -18,7 +17,6 @@ func GetGardenCategories(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.SendErrorBack(w, err, "Could not get gardenCategories")
 	} else {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(gardenCategories)
+		utils.SendResponseBack(w, gardenCategories, http.StatusOK)
 	}
 }
