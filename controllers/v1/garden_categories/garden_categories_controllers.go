@@ -8,6 +8,7 @@ import (
 	garden_categories_models "github.com/ice-cream-backend/models/v1/garden_categories"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetGardenCategories() ([]garden_categories_models.GardenCategories, error) {
@@ -21,7 +22,11 @@ func GetGardenCategories() ([]garden_categories_models.GardenCategories, error) 
 
 	var results []garden_categories_models.GardenCategories
 
-	cursor, err := collection.Find(ctx, bson.D{})
+	opts := options.Find().SetSort(bson.D{
+		primitive.E{Key:"name", Value: 1},
+	})
+
+	cursor, err := collection.Find(ctx, bson.D{}, opts)
 	if err != nil {
 		log.Println("Error finding all gardenCategories:", err)
 	}
