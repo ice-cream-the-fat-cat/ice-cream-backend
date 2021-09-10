@@ -90,54 +90,84 @@ func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(userGardens)
 }
 
-func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint hit: update garden by id")
+func GetGardenByGardenIdWithStartAndEndDate(w http.ResponseWriter, r *http.Request) {
+	start := utils.StartPerformanceTest()
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
 
-	var garden gardens_models.Gardens
-	_ = json.NewDecoder(r.Body).Decode(&garden)
-
 	paramsGardenId := vars["gardenId"]
+	paramsStartDate := vars["startDate"]
+	paramsEndDate := vars["endDate"]
 
 	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
 	if err != nil {
-		log.Println("Error converting params gardenId to ObjectId:", err)
-		w.Header().Set("Content-Type", "application/json")
-		var iceCreamError errors_models.IceCreamErrors
-		iceCreamError.Error = err.Error()
-		iceCreamError.Info = "Invalid gardenId provided"
-		json.NewEncoder(w).Encode(iceCreamError)
+
 	} else {
-		res, err := gardens_controllers.UpdateGardenByGardenId(oid, garden)
+		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenIdWithStartAndEndDate(oid, paramsStartDate, paramsEndDate)
 
 		if err != nil {
-			log.Println("Error updating garden:", err)
-			w.Header().Set("Content-Type", "application/json")
 			var iceCreamError errors_models.IceCreamErrors
 			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Error updating garden"
+			iceCreamError.Info = "Invalid gardenId provided for start / end date getGarden"
 			json.NewEncoder(w).Encode(iceCreamError)
-		}
-
-		if res.MatchedCount != 0 {
-			updatedGarden, _ := gardens_controllers.GetGardensByGardenId(oid)
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(updatedGarden)
 		} else {
-			log.Println("could not find matching garden ID:", oid)
 			w.Header().Set("Content-Type", "application/json")
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = fmt.Sprintf("could not find matching garden ID: %s", oid)
-			iceCreamError.Info = "Error updating rule: no matching oid"
-			json.NewEncoder(w).Encode(iceCreamError)
+			json.NewEncoder(w).Encode(populatedGarden)
+			utils.StopPerformanceTest(start, fmt.Sprintf("Successfully got fully populated garden (start / end date) for gardenId %s ", paramsGardenId))
 		}
 	}
 }
 
-func DeleteGardenByGardenId(w http.ResponseWriter, r *http.Request)  {
+func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit: update garden by id")
+	vars := mux.Vars(r)
+	utils.EnableCors(&w)
+	if r.Method == "PUT" {
+		var garden gardens_models.Gardens
+		_ = json.NewDecoder(r.Body).Decode(&garden)
+
+		paramsGardenId := vars["gardenId"]
+
+		oid, err := primitive.ObjectIDFromHex(paramsGardenId)
+
+		if err != nil {
+			log.Println("Error converting params gardenId to ObjectId:", err)
+			w.Header().Set("Content-Type", "application/json")
+			var iceCreamError errors_models.IceCreamErrors
+			iceCreamError.Error = err.Error()
+			iceCreamError.Info = "Invalid gardenId provided"
+			json.NewEncoder(w).Encode(iceCreamError)
+		} else {
+			res, err := gardens_controllers.UpdateGardenByGardenId(oid, garden)
+
+			if err != nil {
+				log.Println("Error updating garden:", err)
+				w.Header().Set("Content-Type", "application/json")
+				var iceCreamError errors_models.IceCreamErrors
+				iceCreamError.Error = err.Error()
+				iceCreamError.Info = "Error updating garden"
+				json.NewEncoder(w).Encode(iceCreamError)
+			}
+
+			if res.MatchedCount != 0 {
+				updatedGarden, _ := gardens_controllers.GetGardensByGardenId(oid)
+
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(updatedGarden)
+			} else {
+				log.Println("could not find matching garden ID:", oid)
+				w.Header().Set("Content-Type", "application/json")
+				var iceCreamError errors_models.IceCreamErrors
+				iceCreamError.Error = fmt.Sprintf("could not find matching garden ID: %s", oid)
+				iceCreamError.Info = "Error updating rule: no matching oid"
+				json.NewEncoder(w).Encode(iceCreamError)
+			}
+		}
+	}
+}
+
+func DeleteGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: delete garden by id")
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
