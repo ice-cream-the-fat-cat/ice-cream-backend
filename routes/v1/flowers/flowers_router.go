@@ -12,7 +12,11 @@ import (
 func GetFlowers(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 
-	flowerList := flowers_controllers.GetFlowers()
+	flowerList, err := flowers_controllers.GetFlowers()
+
+	if err != nil {
+		utils.SendErrorBack(w, err, "Error getting all flowers")
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(flowerList)

@@ -55,8 +55,7 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 							if err != nil {
 								utils.SendErrorBack(w, err, "Error getting updated user data")
 							} else {
-								w.Header().Set("Content-Type", "application/json")
-								json.NewEncoder(w).Encode(userData)
+								utils.SendResponseBack(w, userData, http.StatusOK)
 							}
 						} else {
 							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
@@ -108,8 +107,7 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 							if err != nil {
 								utils.SendErrorBack(w, err, "Error getting updated user data after deleting completedTask")
 							} else {
-								w.Header().Set("Content-Type", "application/json")
-								json.NewEncoder(w).Encode(userData)
+								utils.SendResponseBack(w, userData, http.StatusOK)
 							}
 						} else {
 							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
