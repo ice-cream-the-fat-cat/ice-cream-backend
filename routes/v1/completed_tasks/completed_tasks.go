@@ -9,6 +9,7 @@ import (
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
+	users_models "github.com/ice-cream-backend/models/v1/users"
 	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -35,7 +36,7 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				utils.SendErrorBack(w, err, "Error Error creating completedTasks!")
 			} else {
-				_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
+				completedTask := completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 
 				user, err := users_controllers.GetUserByFireBaseUserId(completedTasksPost.FireBaseUserId)
 
@@ -55,8 +56,10 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 							if err != nil {
 								utils.SendErrorBack(w, err, "Error getting updated user data")
 							} else {
-								w.Header().Set("Content-Type", "application/json")
-								json.NewEncoder(w).Encode(userData)
+								var userDataWithCompletedTask users_models.UserDataWithCompletedTask
+								userDataWithCompletedTask.User = userData
+								userDataWithCompletedTask.CompletedTask = completedTask
+								utils.SendResponseBack(w, userDataWithCompletedTask, http.StatusOK)
 							}
 						} else {
 							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
@@ -108,8 +111,7 @@ func DeleteCompletedTaskByCompletedTaskId(w http.ResponseWriter, r *http.Request
 							if err != nil {
 								utils.SendErrorBack(w, err, "Error getting updated user data after deleting completedTask")
 							} else {
-								w.Header().Set("Content-Type", "application/json")
-								json.NewEncoder(w).Encode(userData)
+								utils.SendResponseBack(w, userData, http.StatusOK)
 							}
 						} else {
 							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
