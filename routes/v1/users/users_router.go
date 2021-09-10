@@ -18,8 +18,6 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 	paramsUserId := vars["fireBaseUserId"]
 
-	log.Println(paramsUserId)
-
 	_, err := users_controllers.GetUserByFireBaseUserId(paramsUserId)
 	if err != nil {
 		log.Println(w, "Error no user data!")

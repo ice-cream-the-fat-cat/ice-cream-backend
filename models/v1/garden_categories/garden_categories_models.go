@@ -1,9 +1,13 @@
 package garden_categories_models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type GardenCategories struct {
-	ID             string `bson:"_id,omitempty" json:"_id"`
+	ID primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 	Name string `bson:"name" json:"name"`
 	BackgroundColor string `bson:"backgroundColor" json:"backgroundColor"`
 	ImageURL string `bson:"imageURL" json:"imageURL"`

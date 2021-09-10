@@ -21,10 +21,10 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		start := utils.StartPerformanceTest()
 
-		var createdGardensPost gardens_models.Gardens
-		_ = json.NewDecoder(r.Body).Decode(&createdGardensPost)
+		var newGarden gardens_models.GardenForMongo
+		_ = json.NewDecoder(r.Body).Decode(&newGarden)
 
-		res, err := gardens_controllers.CreateGardens(createdGardensPost)
+		res, err := gardens_controllers.CreateGardens(newGarden)
 
 		if err != nil {
 			fmt.Fprintf(w, "Error creating garden!")
@@ -63,10 +63,7 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenId(oid, paramsDate)
 
 		if err != nil {
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid gardenId provided"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Error populating garden by garden id")
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(populatedGarden)
