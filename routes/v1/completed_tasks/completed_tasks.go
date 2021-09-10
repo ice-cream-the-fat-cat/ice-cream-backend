@@ -9,6 +9,7 @@ import (
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
+	users_models "github.com/ice-cream-backend/models/v1/users"
 	"github.com/ice-cream-backend/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -36,9 +37,9 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 				res, err := completed_tasks_controllers.CreateCompletedTask(newCompletedTask)
 	
 				if err != nil {
-					utils.SendErrorBack(w, err, "Error Error creating completedTasks!")
+					utils.SendErrorBack(w, err, "Error creating completedTasks!")
 				} else {
-					_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
+					completedTask := completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
 	
 					user, err := users_controllers.GetUserByFireBaseUserId(newCompletedTask.FireBaseUserId)
 	
@@ -58,7 +59,10 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 								if err != nil {
 									utils.SendErrorBack(w, err, "Error getting updated user data")
 								} else {
-									utils.SendResponseBack(w, userData, http.StatusOK)
+									var userDataWithCompletedTask users_models.UserDataWithCompletedTask
+									userDataWithCompletedTask.User = userData
+									userDataWithCompletedTask.CompletedTask = completedTask
+									utils.SendResponseBack(w, userDataWithCompletedTask, http.StatusOK)
 								}
 							} else {
 								err := fmt.Errorf("could not find matching user ID: %v", user.ID)

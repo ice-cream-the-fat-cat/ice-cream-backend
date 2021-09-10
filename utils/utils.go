@@ -56,7 +56,7 @@ func SendResponseBack(w http.ResponseWriter, body interface{}, httpStatusCode in
 func SendErrorBack(w http.ResponseWriter, err error, info string) {
 	log.Println(info + ":", err)
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(http.StatusBadRequest);
 	var iceCreamError errors_models.IceCreamErrors
 	iceCreamError.Error = err.Error()
 	iceCreamError.Info = info
