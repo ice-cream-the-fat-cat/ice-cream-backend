@@ -24,9 +24,7 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 		var newCompletedTask completed_tasks_models.CompletedTasks
 		_ = json.NewDecoder(r.Body).Decode(&newCompletedTask)
 
-		if newCompletedTask.FireBaseUserId == "" || newCompletedTask.RuleId == primitive.NilObjectID || newCompletedTask.Date.IsZero() {
-			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for completedTask: %+v", newCompletedTask), "Missing required fields to create completedTask")
-		} else {
+		if completed_tasks_models.CompletedTaskValidation(newCompletedTask) {
 			ruleIds := []interface{}{newCompletedTask.RuleId}
 			checkExistingCompletedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, newCompletedTask.Date)
 	
@@ -72,6 +70,8 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+		} else {
+			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for completedTask: %+v", newCompletedTask), "Missing required fields to create completedTask")
 		}
 	}
 }

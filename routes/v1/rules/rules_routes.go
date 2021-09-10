@@ -45,15 +45,27 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 		var multipleRulesPost []rules_models.Rules
 		_ = json.NewDecoder(r.Body).Decode(&multipleRulesPost)
 
-		res, err := rules_controllers.CreateRules(multipleRulesPost)
+		var invalidRule bool
+		for _, rule := range multipleRulesPost {
+			if !rules_models.RuleValidation(rule) {
+				invalidRule = true
+				break;
+			}
+		}
 
-		if err != nil {
-			utils.SendErrorBack(w, err, "Error creating multiple rules!")
+		if !invalidRule {
+			res, err := rules_controllers.CreateRules(multipleRulesPost)
+
+			if err != nil {
+				utils.SendErrorBack(w, err, "Error creating multiple rules!")
+			} else {
+				newRules := rules_controllers.GetRulesByRuleIds(res.InsertedIDs)
+
+				utils.SendResponseBack(w, newRules, http.StatusCreated)
+				utils.StopPerformanceTest(start, "Successful create rules (routes)")
+			}
 		} else {
-			newRules := rules_controllers.GetRulesByRuleIds(res.InsertedIDs)
-
-			utils.SendResponseBack(w, newRules, http.StatusCreated)
-			utils.StopPerformanceTest(start, "Successful create rules (routes)")
+			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for creating bulk rules: %+v", multipleRulesPost), "Missing required fields to create bulk rules")
 		}
 	}
 }

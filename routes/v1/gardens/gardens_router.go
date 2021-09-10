@@ -23,19 +23,23 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 		var newGarden gardens_models.GardenForMongo
 		_ = json.NewDecoder(r.Body).Decode(&newGarden)
 
-		res, err := gardens_controllers.CreateGardens(newGarden)
-
-		if err != nil {
-			utils.SendErrorBack(w, err, "Error creating garden!")
-		} else {
-			newGarden, err := gardens_controllers.GetGardensByGardenId(res.InsertedID)
+		if gardens_models.GardenValidation(newGarden) {
+			res, err := gardens_controllers.CreateGardens(newGarden)
 
 			if err != nil {
-				utils.SendErrorBack(w, err, "Invalid gardenId so could not get garden")
+				utils.SendErrorBack(w, err, "Error creating garden!")
 			} else {
-				utils.SendResponseBack(w, newGarden, http.StatusCreated)
-				utils.StopPerformanceTest(start, "Successful create garden took")
+				newGarden, err := gardens_controllers.GetGardensByGardenId(res.InsertedID)
+
+				if err != nil {
+					utils.SendErrorBack(w, err, "Invalid gardenId so could not get garden")
+				} else {
+					utils.SendResponseBack(w, newGarden, http.StatusCreated)
+					utils.StopPerformanceTest(start, "Successful create garden took")
+				}
 			}
+		} else {
+			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for creating garden: %+v", newGarden), "Missing required fields to create garden")
 		}
 	}
 }
