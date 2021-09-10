@@ -20,46 +20,50 @@ func CreateCompletedTasks(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 
 	if r.Method == "POST" {
-		var completedTasksPost completed_tasks_models.CompletedTasks
-		_ = json.NewDecoder(r.Body).Decode(&completedTasksPost)
+		var newCompletedTask completed_tasks_models.CompletedTasks
+		_ = json.NewDecoder(r.Body).Decode(&newCompletedTask)
 
-		ruleIds := []interface{}{completedTasksPost.RuleId}
-		checkExistingCompletedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, completedTasksPost.Date)
-
-		if len(checkExistingCompletedTasks) > 0 {
-			err := fmt.Errorf("already has existing completedTask for this rule: %q and date: %q", completedTasksPost.RuleId.String(), completedTasksPost.Date)
-			utils.SendErrorBack(w, err, "Already has existing completedTask for this rule and date!")
+		if newCompletedTask.FireBaseUserId == "" || newCompletedTask.RuleId == primitive.NilObjectID || newCompletedTask.Date.IsZero() {
+			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for completedTask: %+v", newCompletedTask), "Missing required fields to create completedTask")
 		} else {
-			res, err := completed_tasks_controllers.CreateCompletedTask(completedTasksPost)
-
-			if err != nil {
-				utils.SendErrorBack(w, err, "Error Error creating completedTasks!")
+			ruleIds := []interface{}{newCompletedTask.RuleId}
+			checkExistingCompletedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, newCompletedTask.Date)
+	
+			if len(checkExistingCompletedTasks) > 0 {
+				err := fmt.Errorf("already has existing completedTask for this rule: %q and date: %q", newCompletedTask.RuleId.String(), newCompletedTask.Date)
+				utils.SendErrorBack(w, err, "Already has existing completedTask for this rule and date!")
 			} else {
-				_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
-
-				user, err := users_controllers.GetUserByFireBaseUserId(completedTasksPost.FireBaseUserId)
-
+				res, err := completed_tasks_controllers.CreateCompletedTask(newCompletedTask)
+	
 				if err != nil {
-					utils.SendErrorBack(w, err, "Error finding user to update coins after completing task")
+					utils.SendErrorBack(w, err, "Error Error creating completedTasks!")
 				} else {
-					user.Balance = user.Balance + COIN_AFTER_COMPLETED_TASK
-
-					updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
-
+					_ = completed_tasks_controllers.GetCompletedTasksByCompletedTaskId(res.InsertedID)
+	
+					user, err := users_controllers.GetUserByFireBaseUserId(newCompletedTask.FireBaseUserId)
+	
 					if err != nil {
-						utils.SendErrorBack(w, err, "Error updating user's coins after completing task")
+						utils.SendErrorBack(w, err, "Error finding user to update coins after completing task")
 					} else {
-						if updatedUser.MatchedCount != 0 {
-							userData, err := users_controllers.GetUserByFireBaseUserId(user.FireBaseUserId)
-
-							if err != nil {
-								utils.SendErrorBack(w, err, "Error getting updated user data")
-							} else {
-								utils.SendResponseBack(w, userData, http.StatusOK)
-							}
+						user.Balance = user.Balance + COIN_AFTER_COMPLETED_TASK
+	
+						updatedUser, err := users_controllers.UpdateUserByUserId(user.ID, user)
+	
+						if err != nil {
+							utils.SendErrorBack(w, err, "Error updating user's coins after completing task")
 						} else {
-							err := fmt.Errorf("could not find matching user ID: %v", user.ID)
-							utils.SendErrorBack(w, err, "Error updating user's balance")
+							if updatedUser.MatchedCount != 0 {
+								userData, err := users_controllers.GetUserByFireBaseUserId(user.FireBaseUserId)
+	
+								if err != nil {
+									utils.SendErrorBack(w, err, "Error getting updated user data")
+								} else {
+									utils.SendResponseBack(w, userData, http.StatusOK)
+								}
+							} else {
+								err := fmt.Errorf("could not find matching user ID: %v", user.ID)
+								utils.SendErrorBack(w, err, "Error updating user's balance")
+							}
 						}
 					}
 				}

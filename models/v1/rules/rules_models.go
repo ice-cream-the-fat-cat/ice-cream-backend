@@ -28,3 +28,7 @@ var RulesSchema = bson.M{
 		},
 	},
 }
+
+func RuleValidation(rule Rules) bool {
+	return rule.Name != "" && rule.GardenId != primitive.NilObjectID
+}
