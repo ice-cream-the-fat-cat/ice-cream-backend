@@ -1,7 +1,6 @@
 package users_router
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -29,8 +28,7 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 
 		_, err := users_controllers.CreateUser(createdUserPost)
 		if err != nil {
-			log.Println(w, "Error creating user!")
-			return
+			utils.SendErrorBack(w, err, "Error creating user!")
 		}
 
 	}
@@ -38,8 +36,8 @@ func GetUserByUserId(w http.ResponseWriter, r *http.Request) {
 	userData, err := users_controllers.GetUserByFireBaseUserId(paramsUserId)
 	if err != nil {
 		log.Println(w, "Error no user data!")
-		return
+		utils.SendErrorBack(w, err, "Error no user data after user creation was done!")
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(userData)
+
+	utils.SendResponseBack(w, userData, http.StatusOK)
 }

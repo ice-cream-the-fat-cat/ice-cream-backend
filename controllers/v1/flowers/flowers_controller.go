@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetFlowers() []flowers_models.Flowers {
+func GetFlowers() ([]flowers_models.Flowers, error) {
 	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
@@ -23,6 +23,7 @@ func GetFlowers() []flowers_models.Flowers {
 	cursor, err := collection.Find(ctx, bson.D{})
 	if err != nil {
 		log.Println(err)
+		return results, err
 	}
 
 	cursorErr := cursor.All(context.TODO(), &results)
@@ -31,5 +32,5 @@ func GetFlowers() []flowers_models.Flowers {
 		log.Println(cursorErr)
 	}
 
-	return results
+	return results, cursorErr
 }

@@ -3,7 +3,6 @@ package rules_router
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -24,12 +23,11 @@ func CreateRule(w http.ResponseWriter, r *http.Request) {
 		res, err := rules_controllers.CreateRule(rulesPost)
 
 		if err != nil {
-			fmt.Fprintf(w, "Error creating rules!")
+			utils.SendErrorBack(w, err, "Error creating rules!")
 		} else {
 			newRule := rules_controllers.GetRulesByRuleId(res.InsertedID)
 
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(newRule)
+			utils.SendResponseBack(w, newRule, http.StatusCreated)
 		}
 	}
 }
@@ -46,12 +44,11 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 		res, err := rules_controllers.CreateRules(multipleRulesPost)
 
 		if err != nil {
-			fmt.Fprintf(w, "Error creating multiple rules!")
+			utils.SendErrorBack(w, err, "Error creating multiple rules!")
 		} else {
 			newRules := rules_controllers.GetRulesByRuleIds(res.InsertedIDs)
 
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(newRules)
+			utils.SendResponseBack(w, newRules, http.StatusCreated)
 			utils.StopPerformanceTest(start, "Successful create rules (routes)")
 		}
 	}
@@ -61,6 +58,7 @@ func UpdateRuleByRuleId(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: update rule by id")
 	vars := mux.Vars(r)
 	utils.EnableCors(&w)
+
 	if r.Method == "PUT" {
 		var rule rules_models.Rules
 		_ = json.NewDecoder(r.Body).Decode(&rule)
@@ -70,27 +68,20 @@ func UpdateRuleByRuleId(w http.ResponseWriter, r *http.Request) {
 		oid, err := primitive.ObjectIDFromHex(paramsRuleId)
 
 		if err != nil {
-			log.Println("Error converting params ruleId to ObjectId:", err)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode("Invalid ruleId provided")
+			utils.SendErrorBack(w, err, "Invalid ruleId provided")
 		} else {
 			res, err := rules_controllers.UpdateRuleByRuleId(oid, rule)
 
 			if err != nil {
-				log.Println("Error updating rule:", err)
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode("Error updating rule")
+				utils.SendErrorBack(w, err, "Error updating rule")
 			}
 
 			if res.MatchedCount != 0 {
 				updatedRule := rules_controllers.GetRulesByRuleId(oid)
 
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(updatedRule)
+				utils.SendResponseBack(w, updatedRule, http.StatusOK)
 			} else {
-				log.Println("could not find matching rule ID:", oid)
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode("Error updating rule: no matching oid")
+				utils.SendErrorBack(w, fmt.Errorf("could not find matching rule ID: %s", oid), "Error updating rule: no matching oid")
 			}
 		}
 	}

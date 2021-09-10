@@ -3,12 +3,10 @@ package gardens_router
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	gardens_controllers "github.com/ice-cream-backend/controllers/v1/gardens"
-	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	gardens_models "github.com/ice-cream-backend/models/v1/gardens"
 	utils_models "github.com/ice-cream-backend/models/v1/utils"
 	"github.com/ice-cream-backend/utils"
@@ -18,6 +16,7 @@ import (
 func CreateGardens(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: create gardens for method:", r.Method)
 	utils.EnableCors(&w)
+
 	if r.Method == "POST" {
 		start := utils.StartPerformanceTest()
 
@@ -27,18 +26,14 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 		res, err := gardens_controllers.CreateGardens(newGarden)
 
 		if err != nil {
-			fmt.Fprintf(w, "Error creating garden!")
+			utils.SendErrorBack(w, err, "Error creating garden!")
 		} else {
 			newGarden, err := gardens_controllers.GetGardensByGardenId(res.InsertedID)
 
 			if err != nil {
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = err.Error()
-				iceCreamError.Info = "Invalid gardenId provided"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, err, "Invalid gardenId so could not get garden")
 			} else {
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(newGarden)
+				utils.SendResponseBack(w, newGarden, http.StatusCreated)
 				utils.StopPerformanceTest(start, "Successful create garden took")
 			}
 		}
@@ -56,17 +51,14 @@ func GetGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 	oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
 	if err != nil {
-		log.Println("Error converting params gardenId to ObjectId")
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode("Invalid gardenId provided")
+		utils.SendErrorBack(w, err, "Invalid gardenId provided")
 	} else {
 		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenId(oid, paramsDate)
 
 		if err != nil {
-			utils.SendErrorBack(w, err, "Error populating garden by garden id")
+			utils.SendErrorBack(w, err, "Could not get get garden with provided gardenId")
 		} else {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(populatedGarden)
+			utils.SendResponseBack(w, populatedGarden, http.StatusOK)
 			utils.StopPerformanceTest(start, fmt.Sprintf("Successfully got fully populated garden for gardenId %s ", paramsGardenId))
 		}
 	}
@@ -83,8 +75,7 @@ func GetGardensByUserId(w http.ResponseWriter, r *http.Request) {
 		userGardens = []gardens_models.Gardens{}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(userGardens)
+	utils.SendResponseBack(w, userGardens, http.StatusOK)
 }
 
 func GetGardenByGardenIdWithStartAndEndDate(w http.ResponseWriter, r *http.Request) {
@@ -104,13 +95,9 @@ func GetGardenByGardenIdWithStartAndEndDate(w http.ResponseWriter, r *http.Reque
 		populatedGarden, err := gardens_controllers.GetPopulatedGardenByGardenIdWithStartAndEndDate(oid, paramsStartDate, paramsEndDate)
 
 		if err != nil {
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid gardenId provided for start / end date getGarden"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Invalid gardenId provided for start / end date getGarden")
 		} else {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(populatedGarden)
+			utils.SendResponseBack(w, populatedGarden, http.StatusOK)
 			utils.StopPerformanceTest(start, fmt.Sprintf("Successfully got fully populated garden (start / end date) for gardenId %s ", paramsGardenId))
 		}
 	}
@@ -129,36 +116,20 @@ func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
 		oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
 		if err != nil {
-			log.Println("Error converting params gardenId to ObjectId:", err)
-			w.Header().Set("Content-Type", "application/json")
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid gardenId provided"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Error converting params gardenId to ObjectId")
 		} else {
 			res, err := gardens_controllers.UpdateGardenByGardenId(oid, garden)
 
 			if err != nil {
-				log.Println("Error updating garden:", err)
-				w.Header().Set("Content-Type", "application/json")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = err.Error()
-				iceCreamError.Info = "Error updating garden"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, err, "Error updating garden")
 			}
 
 			if res.MatchedCount != 0 {
 				updatedGarden, _ := gardens_controllers.GetGardensByGardenId(oid)
 
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(updatedGarden)
+				utils.SendResponseBack(w, updatedGarden, http.StatusOK)
 			} else {
-				log.Println("could not find matching garden ID:", oid)
-				w.Header().Set("Content-Type", "application/json")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = fmt.Sprintf("could not find matching garden ID: %s", oid)
-				iceCreamError.Info = "Error updating rule: no matching oid"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, fmt.Errorf("could not find matching garden ID: %s", oid), "Error updating rule: no matching oid")
 			}
 		}
 	}
@@ -175,37 +146,21 @@ func DeleteGardenByGardenId(w http.ResponseWriter, r *http.Request) {
 		oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
 		if err != nil {
-			log.Println("Error converting params gardenId to ObjectId:", err)
-			w.Header().Set("Content-Type", "application/json")
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid gardenId provided"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Error converting params gardenId to ObjectId")
 		} else {
 			res, err := gardens_controllers.DeleteGardenByGardenId(oid)
 
 			if err != nil {
-				log.Println("Error deleting garden:", err)
-				w.Header().Set("Content-Type", "application/json")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = err.Error()
-				iceCreamError.Info = "Error deleting garden"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, err, "Error deleting garden")
 			}
 
 			if res.DeletedCount == 1 {
 				var deleteResult utils_models.DeleteResult
 				deleteResult.Info = "Successfully deleted Garden"
 				deleteResult.Success = true
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(deleteResult)
+				utils.SendResponseBack(w, deleteResult, http.StatusOK)
 			} else {
-				log.Println("could not find matching garden ID:", oid)
-				w.Header().Set("Content-Type", "application/json")
-				var iceCreamError errors_models.IceCreamErrors
-				iceCreamError.Error = fmt.Sprintf("could not find matching garden ID: %s", oid)
-				iceCreamError.Info = "Error deleting rule: no matching oid"
-				json.NewEncoder(w).Encode(iceCreamError)
+				utils.SendErrorBack(w, fmt.Errorf("could not find matching garden ID: %s", oid), "Error deleting rule: no matching oid")
 			}
 		}
 	}

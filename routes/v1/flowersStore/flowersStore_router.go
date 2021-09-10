@@ -7,7 +7,6 @@ import (
 
 	flowersStore_controllers "github.com/ice-cream-backend/controllers/v1/flowersStore"
 	users_controllers "github.com/ice-cream-backend/controllers/v1/users"
-	errors_models "github.com/ice-cream-backend/models/v1/errors"
 	flowersStore_models "github.com/ice-cream-backend/models/v1/flowersStore"
 	"github.com/ice-cream-backend/utils"
 )
@@ -15,24 +14,24 @@ import (
 func BuyNewFlower(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 	log.Println("Request came into buy new flower endpoint", r.Method)
+
 	if r.Method == "PUT" {
 		var flowersStore flowersStore_models.FlowersStore
 		_ = json.NewDecoder(r.Body).Decode(&flowersStore)
 
 		_, err := flowersStore_controllers.BuyNewFlower(flowersStore)
+
 		if err != nil {
-			var iceCreamError errors_models.IceCreamErrors
-			iceCreamError.Error = err.Error()
-			iceCreamError.Info = "Invalid flowersStore request provided"
-			json.NewEncoder(w).Encode(iceCreamError)
+			utils.SendErrorBack(w, err, "Invalid flowersStore request provided")
 		} else {
 			userData, err := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
+
 			if err != nil {
-				log.Println(w, "Error no user data!")
+				utils.SendErrorBack(w, err, "Error no user data!")
 				return
 			}
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(userData)
+			
+			utils.SendResponseBack(w, userData, http.StatusOK)
 		}
 	}
 }
