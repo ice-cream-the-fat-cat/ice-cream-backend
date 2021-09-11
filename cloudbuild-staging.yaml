@@ -1,0 +1,10 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "asia.gcr.io/$PROJECT_ID/ice-cream-backend-staging:latest",
+        ".",
+      ]
+images: [asia.gcr.io/$PROJECT_ID/ice-cream-backend-staging:latest]
