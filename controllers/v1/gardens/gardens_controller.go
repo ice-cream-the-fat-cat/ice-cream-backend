@@ -6,6 +6,7 @@ import (
 	"time"
 
 	completed_tasks_controllers "github.com/ice-cream-backend/controllers/v1/completed_tasks"
+	garden_categories_controllers "github.com/ice-cream-backend/controllers/v1/garden_categories"
 	rules_controllers "github.com/ice-cream-backend/controllers/v1/rules"
 	mongo_connection "github.com/ice-cream-backend/database"
 	completed_tasks_models "github.com/ice-cream-backend/models/v1/completed_tasks"
@@ -17,12 +18,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneResult, error) {
+func CreateGardens(createdGardensPost gardens_models.GardenForMongo) (*mongo.InsertOneResult, error) {
 	start := utils.StartPerformanceTest()
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
@@ -41,10 +43,11 @@ func CreateGardens(createdGardensPost gardens_models.Gardens) (*mongo.InsertOneR
 
 func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, error) {
 	start := utils.StartPerformanceTest()
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
@@ -56,13 +59,23 @@ func GetGardensByGardenId(createGardenId interface{}) (gardens_models.Gardens, e
 	
 	if err != nil {
 		log.Println("err in findOne:", err)
-	}
+		utils.StopPerformanceTest(start, "Unsuccessful getting gardensByGardenId (controller)")
+		return result, err
+	} else {
+		gardenCategory, gardenCategoryErr := garden_categories_controllers.GetGardenCategoryByGardenCategoryId(result.GardenCategoryId)
 
-	utils.StopPerformanceTest(start, "Successful get gardensByGardenId (controller)")
-	return result, err
+		if gardenCategoryErr != nil {
+			log.Println("Error getting gardenCategory for garden:", gardenCategoryErr)
+		}
+
+		result.GardenCategory = gardenCategory
+
+		utils.StopPerformanceTest(start, "Successful get gardensByGardenId (controller)")
+		return result, gardenCategoryErr
+	}
 }
 
-func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensFullyPopulated, error) {
+func GetPopulatedGardenByGardenId(gardenId interface{}, date string) (gardens_models.GardensFullyPopulated, error) {
 	garden, err := GetGardensByGardenId(gardenId)
 
 	var populatedGarden gardens_models.GardensFullyPopulated
@@ -85,24 +98,62 @@ func GetPopulatedGardenByGardenId(gardenId interface{}) (gardens_models.GardensF
 		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
 	} else{
 		populatedGarden.Rules = rules
-		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIds(ruleIds)
+
+		goDate := utils.ConvertAPIStringToDate(date)
+
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithDate(ruleIds, goDate)
 		populatedGarden.CompletedTasks = completedTasks
 	}
 
 	return populatedGarden, nil
 }
 
-func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
-	ctx := mongo_connection.ContextForMongo()
+func GetPopulatedGardenByGardenIdWithStartAndEndDate(gardenId interface{}, startDate string, endDate string) (gardens_models.GardensFullyPopulated, error) {
+	garden, err := GetGardensByGardenId(gardenId)
+
+	var populatedGarden gardens_models.GardensFullyPopulated
+
+	if err != nil {
+		return populatedGarden, err
+	}
+
+	rules := rules_controllers.GetRulesByGardenId(gardenId)
+
+	var ruleIds []interface{}
+	for _, rule := range rules {
+		ruleIds = append(ruleIds, rule.ID)
+	}
+
+	populatedGarden.Garden = garden
+
+	if len(ruleIds) == 0 {
+		populatedGarden.Rules = []rules_models.Rules{}
+		populatedGarden.CompletedTasks = []completed_tasks_models.CompletedTasks{}
+	} else{
+		populatedGarden.Rules = rules
+
+		goStartDate := utils.ConvertAPIStringToDate(startDate)
+		goEndDate := utils.ConvertAPIStringToDate(endDate)
+
+		completedTasks := completed_tasks_controllers.GetCompletedTasksByRuleIdWithStartAndEndDate(ruleIds, goStartDate, goEndDate)
+		populatedGarden.CompletedTasks = completedTasks
+	}
+
+	return populatedGarden, nil
+}
+
+func GetGardensByUserId(fireBaseUserId interface{}) []gardens_models.Gardens {
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
 	var results []gardens_models.Gardens
 	query := bson.D{
-		primitive.E{Key: "userFireBaseId", Value: userFireBaseId},
+		primitive.E{Key: "fireBaseUserId", Value: fireBaseUserId},
 	}
 	cursor, err := collection.Find(ctx, query)
 	if err != nil {
@@ -115,14 +166,32 @@ func GetGardensByUserId(userFireBaseId interface{}) []gardens_models.Gardens {
 		log.Println(cursorErr)
 	}
 
-	return results
+	gardenCategories, gardenCategoryErr := garden_categories_controllers.GetGardenCategories()
+
+	if gardenCategoryErr != nil {
+		log.Println("Error getting garden categories to populate Gardens by fireBaseUserId")
+	}
+
+	var populatedGardens []gardens_models.Gardens
+	for _, garden := range results {
+		for _, gardenCategory := range gardenCategories {
+			if gardenCategory.ID == garden.GardenCategoryId {
+				garden.GardenCategory = gardenCategory
+				break
+			}
+		}
+		populatedGardens = append(populatedGardens, garden)
+	}
+
+	return populatedGardens
 }
 
 func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens) (*mongo.UpdateResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 
@@ -130,6 +199,7 @@ func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens)
 		"$set": bson.M{
 			"name": garden.Name,
 			"description": garden.Description,
+			"gardenCategoryId": garden.GardenCategoryId,
 			"lastUpdate": time.Now(),
 		},
 	}
@@ -140,10 +210,11 @@ func UpdateGardenByGardenId(gardenId interface{}, garden gardens_models.Gardens)
 }
 
 func DeleteGardenByGardenId(gardenId interface{}) (*mongo.DeleteResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "gardens")
 

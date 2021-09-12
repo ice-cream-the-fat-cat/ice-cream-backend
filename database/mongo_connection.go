@@ -16,9 +16,9 @@ func mongoErrorHandling(err error)  {
 	}
 }
 
-func ContextForMongo() context.Context {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	return ctx
+func ContextForMongo() (context.Context, context.CancelFunc) {
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	return ctx, ctxCancel
 }
 
 func MongoConnection(ctx context.Context) mongo.Client {

@@ -14,10 +14,11 @@ import (
 )
 
 func CreateCompletedTask(completedTasksPost completed_tasks_models.CompletedTasks) (*mongo.InsertOneResult, error) {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
@@ -34,10 +35,11 @@ func CreateCompletedTask(completedTasksPost completed_tasks_models.CompletedTask
 }
 
 func GetCompletedTasksByCompletedTaskId(completedTaskId interface{}) completed_tasks_models.CompletedTasks {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
@@ -51,10 +53,11 @@ func GetCompletedTasksByCompletedTaskId(completedTaskId interface{}) completed_t
 }
 
 func GetCompletedTasksByRuleIds(ruleIds []interface{}) []completed_tasks_models.CompletedTasks {
-	ctx := mongo_connection.ContextForMongo()
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
 	client := mongo_connection.MongoConnection(ctx)
 
 	defer client.Disconnect(ctx)
+	defer ctxCancel()
 
 	collection := mongo_connection.MongoCollection(client, "completedTasks")
 
@@ -75,4 +78,87 @@ func GetCompletedTasksByRuleIds(ruleIds []interface{}) []completed_tasks_models.
 	}
 
 	return results
+}
+
+func GetCompletedTasksByRuleIdWithDate(ruleIds []interface{}, date time.Time) []completed_tasks_models.CompletedTasks {
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+	defer ctxCancel()
+
+	collection := mongo_connection.MongoCollection(client, "completedTasks")
+
+	var results []completed_tasks_models.CompletedTasks
+	query := bson.M{
+		"ruleId": bson.M{"$in": ruleIds},
+		"date": date,
+	}
+	opts := options.Find().SetSort(bson.D{
+		primitive.E{Key:"date", Value: 1},
+	})
+	cursor, err := collection.Find(ctx, query, opts)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
+}
+
+func GetCompletedTasksByRuleIdWithStartAndEndDate(ruleIds []interface{}, startDate time.Time, endDate time.Time) []completed_tasks_models.CompletedTasks {
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+	defer ctxCancel()
+
+	collection := mongo_connection.MongoCollection(client, "completedTasks")
+
+	var results []completed_tasks_models.CompletedTasks
+	query := bson.M{
+		"ruleId": bson.M{"$in": ruleIds},
+		"date": bson.M{"$gte": startDate , "$lte": endDate},
+	}
+	opts := options.Find().SetSort(bson.D{
+		primitive.E{Key:"date", Value: 1},
+	})
+	cursor, err := collection.Find(ctx, query, opts)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cursorErr := cursor.All(context.TODO(), &results)
+
+	if cursorErr != nil {
+		log.Println(cursorErr)
+	}
+
+	return results
+}
+
+func DeleteCompletedTaskByCompletedTaskId(completedTaskId interface{}) (*mongo.DeleteResult, error) {
+	ctx, ctxCancel := mongo_connection.ContextForMongo()
+	client := mongo_connection.MongoConnection(ctx)
+
+	defer client.Disconnect(ctx)
+	defer ctxCancel()
+
+	collection := mongo_connection.MongoCollection(client, "completedTasks")
+
+	query := bson.D{
+		primitive.E{Key: "_id", Value: completedTaskId},
+	}
+	completedTaskRes, completedTaskErr := collection.DeleteOne(context.TODO(), query)
+
+	if completedTaskErr != nil {
+		log.Println("Error deleting completedTask:", completedTaskErr)
+	}
+
+	return completedTaskRes, completedTaskErr
 }
