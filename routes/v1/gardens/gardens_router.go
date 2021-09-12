@@ -23,8 +23,6 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 		var newGarden gardens_models.GardenForMongo
 		_ = json.NewDecoder(r.Body).Decode(&newGarden)
 
-		fmt.Printf("check create garden in router: %+v", newGarden)
-
 		res, err := gardens_controllers.CreateGardens(newGarden)
 
 		if err != nil {

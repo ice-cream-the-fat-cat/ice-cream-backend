@@ -2,7 +2,6 @@ package gardens_controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -31,8 +30,6 @@ func CreateGardens(createdGardensPost gardens_models.GardenForMongo) (*mongo.Ins
 
 	createdGardensPost.CreatedDate = time.Now()
 	createdGardensPost.LastUpdate = time.Now()
-
-	fmt.Printf("check create garden: %+v", createdGardensPost)
 
 	res, insertErr := collection.InsertOne(ctx, createdGardensPost)
 
