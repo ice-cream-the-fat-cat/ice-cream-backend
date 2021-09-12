@@ -59,7 +59,7 @@ func createServer() {
 }
 
 func init() {
-	utils.LoadEnv()
+	utils.LoadEnv(false)
 }
 
 func main() {
