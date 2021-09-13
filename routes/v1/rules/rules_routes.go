@@ -17,17 +17,21 @@ func CreateRule(w http.ResponseWriter, r *http.Request) {
 	utils.EnableCors(&w)
 
 	if r.Method == "POST" {
-		var rulesPost rules_models.Rules
-		_ = json.NewDecoder(r.Body).Decode(&rulesPost)
+		var newRule rules_models.Rules
+		_ = json.NewDecoder(r.Body).Decode(&newRule)
 
-		res, err := rules_controllers.CreateRule(rulesPost)
+		if rules_models.RuleValidation(newRule) {
+			res, err := rules_controllers.CreateRule(newRule)
 
-		if err != nil {
-			utils.SendErrorBack(w, err, "Error creating rules!")
+			if err != nil {
+				utils.SendErrorBack(w, err, "Error creating rules!")
+			} else {
+				newRule := rules_controllers.GetRulesByRuleId(res.InsertedID)
+
+				utils.SendResponseBack(w, newRule, http.StatusCreated)
+			}
 		} else {
-			newRule := rules_controllers.GetRulesByRuleId(res.InsertedID)
-
-			utils.SendResponseBack(w, newRule, http.StatusCreated)
+			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for creating rule: %+v", newRule), "Missing required fields to create rule")
 		}
 	}
 }
@@ -41,15 +45,27 @@ func CreateRules(w http.ResponseWriter, r *http.Request) {
 		var multipleRulesPost []rules_models.Rules
 		_ = json.NewDecoder(r.Body).Decode(&multipleRulesPost)
 
-		res, err := rules_controllers.CreateRules(multipleRulesPost)
+		var invalidRule bool
+		for _, rule := range multipleRulesPost {
+			if !rules_models.RuleValidation(rule) {
+				invalidRule = true
+				break;
+			}
+		}
 
-		if err != nil {
-			utils.SendErrorBack(w, err, "Error creating multiple rules!")
+		if !invalidRule {
+			res, err := rules_controllers.CreateRules(multipleRulesPost)
+
+			if err != nil {
+				utils.SendErrorBack(w, err, "Error creating multiple rules!")
+			} else {
+				newRules := rules_controllers.GetRulesByRuleIds(res.InsertedIDs)
+
+				utils.SendResponseBack(w, newRules, http.StatusCreated)
+				utils.StopPerformanceTest(start, "Successful create rules (routes)")
+			}
 		} else {
-			newRules := rules_controllers.GetRulesByRuleIds(res.InsertedIDs)
-
-			utils.SendResponseBack(w, newRules, http.StatusCreated)
-			utils.StopPerformanceTest(start, "Successful create rules (routes)")
+			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for creating bulk rules: %+v", multipleRulesPost), "Missing required fields to create bulk rules")
 		}
 	}
 }
