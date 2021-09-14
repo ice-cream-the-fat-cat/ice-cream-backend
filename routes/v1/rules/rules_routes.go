@@ -31,7 +31,7 @@ func CreateRule(w http.ResponseWriter, r *http.Request) {
 				utils.SendResponseBack(w, newRule, http.StatusCreated)
 			}
 		} else {
-			utils.SendErrorBack(w, fmt.Errorf("missiing required fields for creating rule: %+v", newRule), "Missing required fields to create rule")
+			utils.SendErrorBack(w, fmt.Errorf("missing required fields for creating rule: %+v", newRule), "Missing required fields to create rule")
 		}
 	}
 }
@@ -81,24 +81,28 @@ func UpdateRuleByRuleId(w http.ResponseWriter, r *http.Request) {
 
 		paramsRuleId := vars["ruleId"]
 
-		oid, err := primitive.ObjectIDFromHex(paramsRuleId)
-
-		if err != nil {
-			utils.SendErrorBack(w, err, "Invalid ruleId provided")
-		} else {
-			res, err := rules_controllers.UpdateRuleByRuleId(oid, rule)
-
+		if rules_models.RuleValidation(rule) {
+			oid, err := primitive.ObjectIDFromHex(paramsRuleId)
+	
 			if err != nil {
-				utils.SendErrorBack(w, err, "Error updating rule")
-			}
-
-			if res.MatchedCount != 0 {
-				updatedRule := rules_controllers.GetRulesByRuleId(oid)
-
-				utils.SendResponseBack(w, updatedRule, http.StatusOK)
+				utils.SendErrorBack(w, err, "Invalid ruleId provided")
 			} else {
-				utils.SendErrorBack(w, fmt.Errorf("could not find matching rule ID: %s", oid), "Error updating rule: no matching oid")
+				res, err := rules_controllers.UpdateRuleByRuleId(oid, rule)
+	
+				if err != nil {
+					utils.SendErrorBack(w, err, "Error updating rule")
+				}
+	
+				if res.MatchedCount != 0 {
+					updatedRule := rules_controllers.GetRulesByRuleId(oid)
+	
+					utils.SendResponseBack(w, updatedRule, http.StatusOK)
+				} else {
+					utils.SendErrorBack(w, fmt.Errorf("could not find matching rule ID: %s", oid), "Error updating rule: no matching oid")
+				}
 			}
+		} else {
+			utils.SendErrorBack(w, fmt.Errorf("missing required fields to update rule: %+v", rule), "Missing required fields to update rule")
 		}
 	}
 }
