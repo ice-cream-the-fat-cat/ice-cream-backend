@@ -23,19 +23,23 @@ func CreateGardens(w http.ResponseWriter, r *http.Request) {
 		var newGarden gardens_models.GardenForMongo
 		_ = json.NewDecoder(r.Body).Decode(&newGarden)
 
-		res, err := gardens_controllers.CreateGardens(newGarden)
-
-		if err != nil {
-			utils.SendErrorBack(w, err, "Error creating garden!")
-		} else {
-			newGarden, err := gardens_controllers.GetGardensByGardenId(res.InsertedID)
+		if gardens_models.GardenMongoValidation(newGarden) {
+			res, err := gardens_controllers.CreateGardens(newGarden)
 
 			if err != nil {
-				utils.SendErrorBack(w, err, "Invalid gardenId so could not get garden")
+				utils.SendErrorBack(w, err, "Error creating garden!")
 			} else {
-				utils.SendResponseBack(w, newGarden, http.StatusCreated)
-				utils.StopPerformanceTest(start, "Successful create garden took")
+				newGarden, err := gardens_controllers.GetGardensByGardenId(res.InsertedID)
+
+				if err != nil {
+					utils.SendErrorBack(w, err, "Invalid gardenId so could not get garden")
+				} else {
+					utils.SendResponseBack(w, newGarden, http.StatusCreated)
+					utils.StopPerformanceTest(start, "Successful create garden took")
+				}
 			}
+		} else {
+			utils.SendErrorBack(w, fmt.Errorf("missing required fields for creating garden: %+v", newGarden), "Missing required fields to create garden")
 		}
 	}
 }
@@ -113,24 +117,28 @@ func UpdateGardenById(w http.ResponseWriter, r *http.Request) {
 
 		paramsGardenId := vars["gardenId"]
 
-		oid, err := primitive.ObjectIDFromHex(paramsGardenId)
-
-		if err != nil {
-			utils.SendErrorBack(w, err, "Error converting params gardenId to ObjectId")
-		} else {
-			res, err := gardens_controllers.UpdateGardenByGardenId(oid, garden)
+		if gardens_models.GardenValidation(garden) {
+			oid, err := primitive.ObjectIDFromHex(paramsGardenId)
 
 			if err != nil {
-				utils.SendErrorBack(w, err, "Error updating garden")
-			}
-
-			if res.MatchedCount != 0 {
-				updatedGarden, _ := gardens_controllers.GetGardensByGardenId(oid)
-
-				utils.SendResponseBack(w, updatedGarden, http.StatusOK)
+				utils.SendErrorBack(w, err, "Error converting params gardenId to ObjectId")
 			} else {
-				utils.SendErrorBack(w, fmt.Errorf("could not find matching garden ID: %s", oid), "Error updating rule: no matching oid")
+				res, err := gardens_controllers.UpdateGardenByGardenId(oid, garden)
+
+				if err != nil {
+					utils.SendErrorBack(w, err, "Error updating garden")
+				}
+
+				if res.MatchedCount != 0 {
+					updatedGarden, _ := gardens_controllers.GetGardensByGardenId(oid)
+
+					utils.SendResponseBack(w, updatedGarden, http.StatusOK)
+				} else {
+					utils.SendErrorBack(w, fmt.Errorf("could not find matching garden ID: %s", oid), "Error updating rule: no matching oid")
+				}
 			}
+		} else {
+			utils.SendErrorBack(w, fmt.Errorf("missing required fields update garden: %+v", garden), "Missing required fields to update garden")
 		}
 	}
 }
