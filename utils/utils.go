@@ -13,12 +13,20 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func LoadEnv() {
-	err := godotenv.Load(".env")
+func LoadEnv(forTest bool) {
+	if forTest {
+		err := godotenv.Load(".test.env")
 
-	if err != nil && os.Getenv("GO_ENV") != "production" {
-		log.Fatal("Error loading .env file")
+		if err != nil {
+			log.Fatal("Error loading .test file")
+		}
+	} else {
+		err := godotenv.Load(".env")
+		if err != nil && os.Getenv("GO_ENV") != "production" {
+			log.Fatal("Error loading .env file")
+		}
 	}
+	
 }
 
 func EnableCors(w *http.ResponseWriter) {

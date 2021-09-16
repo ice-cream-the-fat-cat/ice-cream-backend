@@ -2,6 +2,7 @@ package flowersStore_router
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -19,19 +20,23 @@ func BuyNewFlower(w http.ResponseWriter, r *http.Request) {
 		var flowersStore flowersStore_models.FlowersStore
 		_ = json.NewDecoder(r.Body).Decode(&flowersStore)
 
-		_, err := flowersStore_controllers.BuyNewFlower(flowersStore)
-
-		if err != nil {
-			utils.SendErrorBack(w, err, "Invalid flowersStore request provided")
-		} else {
-			userData, err := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
-
+		if flowersStore_models.FlowerStoreValidation((flowersStore)) {
+			_, err := flowersStore_controllers.BuyNewFlower(flowersStore)
+	
 			if err != nil {
-				utils.SendErrorBack(w, err, "Error no user data!")
-				return
+				utils.SendErrorBack(w, err, "Invalid flowersStore request provided")
+			} else {
+				userData, err := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
+	
+				if err != nil {
+					utils.SendErrorBack(w, err, "Error no user data!")
+					return
+				}
+				
+				utils.SendResponseBack(w, userData, http.StatusOK)
 			}
-			
-			utils.SendResponseBack(w, userData, http.StatusOK)
+		} else {
+			utils.SendErrorBack(w, fmt.Errorf("missing required fields to update user's flower collection and coin balace: %+v", flowersStore), "Missing required fields to update user's flower collection and coin balace")
 		}
 	}
 }
