@@ -9,7 +9,6 @@ import (
 	flowersStore_models "github.com/ice-cream-backend/models/v1/flowersStore"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,21 +23,19 @@ func BuyNewFlower(flowersStore flowersStore_models.FlowersStore) (*mongo.UpdateR
 
 	userData, _ := users_controllers.GetUserByFireBaseUserId(flowersStore.FireBaseUserId)
 
-	oid, _ := primitive.ObjectIDFromHex(flowersStore.FlowerID)
-
 	newBalance := userData.Balance - flowersStore.Price
 
 	if newBalance < 0 {
 		updatedUser := bson.M{}
 		result, _ := collection.UpdateByID(ctx, userData.ID, updatedUser)
 
-		errStr := fmt.Errorf("Error insufficient balance: %v", newBalance)
+		errStr := fmt.Errorf("error insufficient balance: %v", newBalance)
 		return result, errStr
 	} else {
 		updatedUser := bson.M{
 			"$set": bson.M{
 				"balance":           newBalance,
-				"flowerCollections": append(userData.FlowerCollections, oid),
+				"flowerCollections": append(userData.FlowerCollections, flowersStore.FlowerID),
 				"lastUpdate":        time.Now(),
 			},
 		}
