@@ -35,3 +35,11 @@ type GardensFullyPopulated struct {
 	Rules          []rules_models.Rules                    `json:"rules"`
 	CompletedTasks []completed_tasks_models.CompletedTasks `json:"completedTasks"`
 }
+
+func GardenMongoValidation(garden GardenForMongo) bool {
+	return garden.Name != "" && garden.FireBaseUserId != "" && garden.GardenCategoryId != primitive.NilObjectID
+}
+
+func GardenValidation(garden Gardens) bool {
+	return garden.ID != primitive.NilObjectID && garden.Name != "" && garden.FireBaseUserId != "" && garden.GardenCategoryId != primitive.NilObjectID
+}

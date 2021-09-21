@@ -15,3 +15,7 @@ type CompletedTasks struct {
 	CreatedDate time.Time `bson:"createdDate" json:"createdDate"`
 	LastUpdate time.Time `bson:"lastUpdate" json:"lastUpdate"`
 }
+
+func CompletedTaskValidation(completedTask CompletedTasks) bool {
+	return completedTask.FireBaseUserId != "" && completedTask.RuleId != primitive.NilObjectID && !completedTask.Date.IsZero()
+}
